@@ -28,21 +28,14 @@ manager.add_command("db", MigrateCommand)
 
 
 @manager.command
-def test(name=None):
+def test():
     """
     Run tests
-    FIXME
     """
-    pass
-
-
-@manager.command
-def example():
-    """
-    Example command
-    FIXME
-    """
-    pass
+    import unittest
+    loader = unittest.TestLoader()
+    tests = loader.discover('tests')
+    unittest.TextTestRunner(verbosity=2).run(tests)
 
 
 if __name__ == '__main__':

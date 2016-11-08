@@ -4,11 +4,11 @@ import os
 from app import create_app, db
 from flask_script import Manager, Shell
 from app.models import User, Battle, Entry, Vote
-#from flask_migrate import Migrate, MigrateCommand
+from flask_migrate import Migrate, MigrateCommand
 
 app = create_app(os.environ.get('FLASK_CONFIG'))
 manager = Manager(app)
-#migrate = Migrate(app, db)
+migrate = Migrate(app, db)
 
 
 def make_shell_context():
@@ -24,6 +24,7 @@ def make_shell_context():
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))
+manager.add_command("db", MigrateCommand)
 
 
 @manager.command

@@ -87,3 +87,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# PyCharm user-specific files
+*.iws
+.idea/workspace.xml
+.idea/tasks.xml

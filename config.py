@@ -9,6 +9,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False # FIXME
     SQLALCHEMY_RECORD_QUERIES = True # FIXME
 
+    @staticmethod
+    def init_app(app):
+        pass
+
 
 class TestingConfig(Config):
     WTF_CSRF_ENABLED = False  # FIXME

@@ -5,6 +5,7 @@ from . import db
 class Vote(db.Model):
     __tablename__ = 'votes'
     id = db.Column(db.Integer, primary_key=True)
+    creation_datetime = db.Column(db.DateTime)
     voter_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'))
     entry_left_id = db.Column(db.Integer,
@@ -25,16 +26,13 @@ class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    date = db.Column(db.DateTime)
+    creation_datetime = db.Column(db.DateTime)
     image = db.Column(db.LargeBinary)
 
     user_id = db.Column(db.Integer,
-                        db.ForeignKey('users.id'),
-                        primary_key=True)
+                        db.ForeignKey('users.id'))
     battle_id = db.Column(db.Integer,
-                          db.ForeignKey('battles.id'),
-                          primary_key=True)
-
+                          db.ForeignKey('battles.id'))
 
 
     def __repr__(self):
@@ -49,7 +47,7 @@ class Battle(db.Model):
                            index=True)
     name = db.Column(db.String(64), index=True)
     description = db.Column(db.String(1024))
-    creation_date = db.Column(db.DateTime)
+    creation_datetime = db.Column(db.DateTime)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 
@@ -96,6 +94,11 @@ class User(db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(120), unique=True, index=True)
     password_hash = db.Column(db.String(128))
+
+    votes = db.relationship('Vote',
+                            backref='user',
+                            lazy='dynamic',  # FIXME what does it mean actually?
+                            cascade='all, delete-orphan')
 
     @property
     def password(self):

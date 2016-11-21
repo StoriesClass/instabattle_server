@@ -31,6 +31,12 @@ class Entry(db.Model):
 class Battle(db.Model):
     __tablename__ = 'battles'
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True)
+    description = db.Column(db.String(1024))
+    creation_date = db.Column(db.DateTime)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+
     votes = db.relationship('Vote',
                             backref='battle',
                             lazy='dynamic',  # FIXME what does it mean actually?
@@ -39,6 +45,21 @@ class Battle(db.Model):
                               backref='battle',
                               lazy='dynamic',
                               cascade='all, delete-orphan')
+
+    # FIXME doesn't work properly
+    @staticmethod
+    def get_in_radius(latitude, longitude, radius):
+        return db.session.query(Battle).filter(
+            (latitude-Battle.latitude)**2 + (longitude-Battle.longitude)**2 <= radius**2)
+
+    @staticmethod
+    def get_all():
+        """
+        Get all battles. Only for debuggin purposes.
+        :return: List of all battles in database.
+        """
+        return Battle.query.all()
+
 
     def __repr__(self):
         return "<Battle {}>".format(id)
@@ -62,6 +83,8 @@ class User(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
 
     def __repr__(self):
         return "<User {}>".format(self.username)

@@ -38,7 +38,7 @@ def test():
     unittest.TextTestRunner(verbosity=2).run(tests)
 
 @manager.command
-def generate_fake(user_count=100, battle_count=100):
+def generate_fake(user_count=10, battle_count=10):
     """
     Generate fake users and battles
     :param user_count: Number of fake users.

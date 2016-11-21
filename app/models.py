@@ -4,12 +4,17 @@ from . import db
 
 class Vote(db.Model):
     __tablename__ = 'votes'
-    user_id = db.Column(db.Integer,
-                        db.ForeignKey('users.id'),
-                        primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    voter_id = db.Column(db.Integer,
+                        db.ForeignKey('users.id'))
+    entry_left_id = db.Column(db.Integer,
+                          db.ForeignKey('entries.id'))
+    entry_right_id = db.Column(db.Integer,
+                             db.ForeignKey('entries.id'))
     battle_id = db.Column(db.Integer,
-                          db.ForeignKey('battles.id'),
-                          primary_key=True)
+                          db.ForeignKey('battles.id'))
+
+    chosen_entry = db.Column(db.Enum('left', 'right'))
 
     def __repr__(self):
         return "<Vote by {} in battle {}>".format(self.user_id, self.battle_id)
@@ -17,12 +22,20 @@ class Vote(db.Model):
 
 class Entry(db.Model):
     __tablename__ = 'entries'
+    id = db.Column(db.Integer, primary_key=True)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    date = db.Column(db.DateTime)
+    image = db.Column(db.LargeBinary)
+
     user_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'),
                         primary_key=True)
     battle_id = db.Column(db.Integer,
                           db.ForeignKey('battles.id'),
                           primary_key=True)
+
+
 
     def __repr__(self):
         return "<Entry of {} in battle {}>".format(self.user_id, self.battle_id)
@@ -31,20 +44,25 @@ class Entry(db.Model):
 class Battle(db.Model):
     __tablename__ = 'battles'
     id = db.Column(db.Integer, primary_key=True)
+    creator_id = db.Column(db.Integer,
+                           db.ForeignKey('users.id'),
+                           index=True)
     name = db.Column(db.String(64), index=True)
     description = db.Column(db.String(1024))
     creation_date = db.Column(db.DateTime)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 
-    votes = db.relationship('Vote',
-                            backref='battle',
-                            lazy='dynamic',  # FIXME what does it mean actually?
-                            cascade='all, delete-orphan')
+
     entries = db.relationship('Entry',
                               backref='battle',
                               lazy='dynamic',
                               cascade='all, delete-orphan')
+
+    votes = db.relationship('Vote',
+                            backref='battle',
+                            lazy='dynamic',  # FIXME what does it mean actually?
+                            cascade='all, delete-orphan')
 
     # FIXME doesn't work properly
     @staticmethod
@@ -60,9 +78,15 @@ class Battle(db.Model):
         """
         return Battle.query.all()
 
+    def get_votes(self):
+        return self.entries.all()
+
+    def get_entries(self):
+        return self.entries.all()
+
 
     def __repr__(self):
-        return "<Battle {}>".format(id)
+        return "<Battle {}>".format(self.id)
 
 
 class User(db.Model):
@@ -84,7 +108,8 @@ class User(db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-
+    def participate(self, battle):
+        pass  # FIXME
 
     def __repr__(self):
         return "<User {}>".format(self.username)

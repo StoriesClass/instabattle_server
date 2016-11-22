@@ -15,5 +15,7 @@ def create_app(config_name):
     # List of blueprints FIXME
     # from .main import main as main_blueprint
     # app.register_blueprint(main_blueprint)
+    from .api import create_blueprint as create_api_blueprint
+    app.register_blueprint(create_api_blueprint())
 
     return app

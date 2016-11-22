@@ -69,38 +69,38 @@ def generate_fake(user_count=10, battle_count=10, entry_count=10, vote_count=10)
     print("User count is", user_count)
 
     for i in range(battle_count):
-        try_add(Battle(creation_datetime=forgery_py.date.datetime(past=True),
+        try_add(Battle(created_on=forgery_py.date.datetime(past=True),
                        latitude=forgery_py.geo.latitude(),
                        longitude=forgery_py.geo.longitude(),
                        name=forgery_py.lorem_ipsum.word(),
-                       description=forgery_py.lorem_ipsum.paragraph()))
+                       description=forgery_py.lorem_ipsum.paragraph(),
+                       creator=random.choice(User.query.all())))
 
     battle_count = len(Battle.query.all())
     print("Battle count is", battle_count)
 
     for i in range(entry_count):
-        try_add(Entry(creation_datetime=forgery_py.date.datetime(past=True),
+        try_add(Entry(created_on=forgery_py.date.datetime(past=True),
                       latitude=forgery_py.geo.latitude(),
                       longitude=forgery_py.geo.longitude(),
-                      user_id=forgery_py.basic.number(at_most=user_count),
-                      battle_id=forgery_py.basic.number(at_most=battle_count),
-                      image=urandom(1024), # FIXME temporary
+                      user=random.choice(User.query.all()),
+                      battle=random.choice(Battle.query.all()),
+                      image=urandom(1024)  # FIXME temporary
                       ))
 
     entry_count = len(Entry.query.all())
     print("Entry count is", entry_count)
 
     for i in range(vote_count):
-        try_add(Vote(creation_datetime=forgery_py.date.datetime(past=True),
-                     voter_id=forgery_py.basic.number(at_most=user_count),
+        try_add(Vote(created_on=forgery_py.date.datetime(past=True),
+                     voter=random.choice(User.query.all()),
                      entry_left_id=forgery_py.basic.number(at_most=entry_count),
                      entry_right_id=forgery_py.basic.number(at_most=entry_count),
-                     battle_id=forgery_py.basic.number(at_most=battle_count),
+                     battle=random.choice(Battle.query.all()),
                      chosen_entry=random.choice(['left', 'right'])))
 
     vote_count = len(Entry.query.all())
     print("Vote count is", vote_count)
-
 
 
 if __name__ == '__main__':

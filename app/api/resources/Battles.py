@@ -1,4 +1,5 @@
 from flask_restful import Resource
+from ...models import Battle, User
 
 
 class BattlesListAPI(Resource):
@@ -6,7 +7,8 @@ class BattlesListAPI(Resource):
         """
         Create new battle
         """
-        pass
+        # FIXME need params
+        battle = Battle(name="Battle")
 
 
 class BattleAPI(Resource):
@@ -14,13 +16,14 @@ class BattleAPI(Resource):
         """
         Get existing battle
         """
-        pass
+        battle = Battle.get_by_id(battle_id)
+
 
     def put(self, battle_id):
         """
         Update battles info
         """
-        pass
+        battle = Battle.get_by_id(battle_id)
 
 
 class BattleEntries(Resource):
@@ -28,4 +31,5 @@ class BattleEntries(Resource):
         """
         Get all entries of the battle
         """
-        pass
+        battle = Battle.get_by_id(battle_id)
+        entries = battle.get_entries()

@@ -1,21 +1,28 @@
+from sqlalchemy import CheckConstraint, Index
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
+from datetime import datetime
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import desc
+
 
 
 class Vote(db.Model):
     __tablename__ = 'votes'
     id = db.Column(db.Integer, primary_key=True)
-    creation_datetime = db.Column(db.DateTime)
+    created_on = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     voter_id = db.Column(db.Integer,
-                        db.ForeignKey('users.id'))
+                         db.ForeignKey('users.id'), nullable=False)
+    voter = db.relationship('User', backref=db.backref('votes'))
     entry_left_id = db.Column(db.Integer,
-                          db.ForeignKey('entries.id'))
+                              db.ForeignKey('entries.id'), nullable=False)
     entry_right_id = db.Column(db.Integer,
-                             db.ForeignKey('entries.id'))
+                               db.ForeignKey('entries.id'), nullable=False)
     battle_id = db.Column(db.Integer,
-                          db.ForeignKey('battles.id'))
+                          db.ForeignKey('battles.id'), nullable=False)
+    battle = db.relationship('Battle', uselist=False)
 
-    chosen_entry = db.Column(db.Enum('left', 'right'))
+    chosen_entry = db.Column(db.Enum('left', 'right', name="side_enum",))
 
     def __repr__(self):
         return "<Vote by {} in battle {}>".format(self.user_id, self.battle_id)
@@ -23,17 +30,48 @@ class Vote(db.Model):
 
 class Entry(db.Model):
     __tablename__ = 'entries'
+
     id = db.Column(db.Integer, primary_key=True)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    creation_datetime = db.Column(db.DateTime)
-    image = db.Column(db.LargeBinary)
+    created_on = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    image = db.Column(db.LargeBinary, nullable=False)
 
     user_id = db.Column(db.Integer,
-                        db.ForeignKey('users.id'))
+                        db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('entries'))
     battle_id = db.Column(db.Integer,
-                          db.ForeignKey('battles.id'))
+                          db.ForeignKey('battles.id'), nullable=False)
+    battle = db.relationship('Battle', backref=db.backref('entries'))
 
+    __table_args__ = (Index('ix_location', latitude, longitude),)
+
+    @staticmethod
+    def get_by_id(id):
+        """
+        :param id: identifier of the wanted entry.
+        :return: Entry object if there is a battle with given id,
+        None otherwise.
+        """
+        try:
+            entry = Entry.query.filter_by(id=id).one()
+        except NoResultFound as e:
+            return None
+        return entry
+
+    @staticmethod
+    def get_list(count=None):
+        """
+        Return all entries if count is not provided,
+        otherwise only given number of entries.
+        :param count: Number of entries to get.
+        :return: List of Entry objects.
+        """
+        if count is None:
+            entries = Entry.query.all()
+        else:
+            entries = Entry.query.limit(count)
+        return entries
 
     def __repr__(self):
         return "<Entry of {} in battle {}>".format(self.user_id, self.battle_id)
@@ -45,43 +83,67 @@ class Battle(db.Model):
     creator_id = db.Column(db.Integer,
                            db.ForeignKey('users.id'),
                            index=True)
-    name = db.Column(db.String(64), index=True)
-    description = db.Column(db.String(1024))
-    creation_datetime = db.Column(db.DateTime)
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-
-
-    entries = db.relationship('Entry',
-                              backref='battle',
-                              lazy='dynamic',
-                              cascade='all, delete-orphan')
-
-    votes = db.relationship('Vote',
-                            backref='battle',
-                            lazy='dynamic',  # FIXME what does it mean actually?
-                            cascade='all, delete-orphan')
+    creator = db.relationship('User', uselist=False)
+    name = db.Column(db.String(64), index=True, nullable=False)
+    description = db.Column(db.Text())
+    created_on = db.Column(db.DateTime, default=datetime.now)
+    latitude = db.Column(db.Float, CheckConstraint('(-90 <= latitude) AND (latitude <= 90)'))
+    longitude = db.Column(db.Float, CheckConstraint('(-180 <= longitude) AND (longitude <= 180)'))
 
     # FIXME doesn't work properly
     @staticmethod
     def get_in_radius(latitude, longitude, radius):
-        return db.session.query(Battle).filter(
-            (latitude-Battle.latitude)**2 + (longitude-Battle.longitude)**2 <= radius**2)
+        """
+        Radius is metaphorical for now.
+        :param latitude:
+        :param longitude:
+        :param radius: a value from 0 to 1 where 1 means whole map
+        :return: Battles close to point with coordinates (latitude, longitude)
+        according to some "magic" metric.
+        """
+        return db.session.query(Battle).filter(abs(Battle.latitude - latitude) < radius*90,
+                                               abs(Battle.longitude - longitude) < radius*180)
 
     @staticmethod
-    def get_all():
+    def get_by_id(id):
         """
-        Get all battles. Only for debuggin purposes.
-        :return: List of all battles in database.
+        :param id: identifier of the wanted battle.
+        :return: Battle object if there is a battle with given id,
+        None otherwise.
         """
-        return Battle.query.all()
+        try:
+            battle = Battle.query.filtery_by(id=id).one()
+        except NoResultFound as e:
+            return None
+        return battle
+
+    @staticmethod
+    def get_list(count=None):
+        """
+        Return all battles if count is not provided,
+        otherwise only given number of battles.
+        :param count: Number of battles to get.
+        :return: List of Battle objects.
+        """
+        if count is None:
+            battles = Battle.query.all()
+        else:
+            battles = Battle.query.limit(count)
+        return battles
 
     def get_votes(self):
+        """
+        Get all votes of the battle.
+        :return: List of Vote objects.
+        """
         return self.entries.all()
 
     def get_entries(self):
+        """
+        Get all entries of the battle.
+        :return: List of Entry objects.
+        """
         return self.entries.all()
-
 
     def __repr__(self):
         return "<Battle {}>".format(self.id)
@@ -91,14 +153,11 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, index=True)
-    email = db.Column(db.String(120), unique=True, index=True)
-    password_hash = db.Column(db.String(128))
-
-    votes = db.relationship('Vote',
-                            backref='user',
-                            lazy='dynamic',  # FIXME what does it mean actually?
-                            cascade='all, delete-orphan')
+    username = db.Column(db.String(64), unique=True, index=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, index=True, nullable=False)
+    created_on = db.Column(db.DateTime, default=datetime.now)
+    password_hash = db.Column(db.String(128), nullable=False)
+    rating = db.Column(db.Integer, default=1000, nullable=False)
 
     @property
     def password(self):
@@ -106,13 +165,46 @@ class User(db.Model):
 
     @password.setter
     def password(self, password):
+        """
+        Securely set password.
+        :param password:
+        """
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
+        """
+        Check if user's password matches with given.
+        :param password:
+        """
         return check_password_hash(self.password_hash, password)
 
-    def participate(self, battle):
-        pass  # FIXME
+    @staticmethod
+    def get_by_id(id):
+        """
+        :param id: identifier of the wanted user.
+        :return: Entry object if there is a user with given id,
+        None otherwise.
+        """
+        try:
+            entry = Entry.query.filter_by(id=id).one()
+        except NoResultFound as e:
+            return None
+        return entry
+
+    @staticmethod
+    def get_list(count=None):
+        """
+        Return all users if count is not provided,
+        otherwise only given number of users.
+        :param count: Number of battles to get.
+        :return: List of User objects sorted by rating.
+        """
+        users = User.query.order_by(desc(User.rating))
+        if count is None:
+            users = users.all()
+        else:
+            users = users.limit(count)
+        return users
 
     def __repr__(self):
         return "<User {}>".format(self.username)

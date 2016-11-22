@@ -18,12 +18,12 @@ class BattleModelTestCase(unittest.TestCase):
     def test_get_in_radius(self):
         self.assertTrue(True)  # FIXME
 
-    def test_get_all(self):
-        battles = Battle.get_all()
+    def test_get_list(self):
+        battles = Battle.get_list()
         self.assertEquals(0, len(battles))
         size = 10
         for b in (Battle(name="Battle" + str(i)) for i in range(size)):
             db.session.add(b)
         db.session.commit()
-        battles = Battle.get_all()
+        battles = Battle.get_list()
         self.assertEquals(size, len(battles))

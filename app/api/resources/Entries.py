@@ -1,4 +1,5 @@
 from flask_restful import Resource
+from ...models import Entry
 
 
 class EntriesListAPI(Resource):
@@ -14,6 +15,7 @@ class EntryAPI(Resource):
         """
         Get the entry
         """
+        entry = Entry.get_by_id(entry_id)
         pass
 
     def put(self, entry_id):

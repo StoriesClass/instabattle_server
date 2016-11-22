@@ -1,5 +1,6 @@
 from flask_restful import Resource
-
+from ...models import User
+from sqlalchemy.orm.exc import NoResultFound
 
 class UsersListAPI(Resource):
     def post(self):
@@ -22,7 +23,7 @@ class UserAPI(Resource):
         """
         Get existing user
         """
-        pass
+        user = User.get_by_id(user_id)
 
     def put(self, user_id):
         """
@@ -44,4 +45,4 @@ class UserEntries(Resource):
         """
         Get all battle entries of the user
         """
-        pass
+        user = User.query.filter_by(id=user_id).one()

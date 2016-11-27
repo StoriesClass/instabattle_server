@@ -2,6 +2,7 @@ from flask_restful import Resource
 from ...models import User
 from sqlalchemy.orm.exc import NoResultFound
 
+
 class UsersListAPI(Resource):
     def post(self):
         """

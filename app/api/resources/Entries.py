@@ -1,5 +1,7 @@
-from flask_restful import Resource
+from flask import jsonify
+from flask_restful import Resource, abort
 from ...models import Entry
+from ..common import entry_schema
 
 
 class EntriesListAPI(Resource):
@@ -16,7 +18,9 @@ class EntryAPI(Resource):
         Get the entry
         """
         entry = Entry.get_by_id(entry_id)
-        pass
+        if entry is None:
+            abort(400, message="Entry could not be found.")
+        return jsonify({"entry": entry_schema.dump(entry).data})
 
     def put(self, entry_id):
         """

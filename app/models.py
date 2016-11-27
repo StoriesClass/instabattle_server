@@ -6,7 +6,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import desc
 
 
-
 class Vote(db.Model):
     __tablename__ = 'votes'
     id = db.Column(db.Integer, primary_key=True)
@@ -112,7 +111,7 @@ class Battle(db.Model):
         None otherwise.
         """
         try:
-            battle = Battle.query.filtery_by(id=id).one()
+            battle = Battle.query.filter_by(id=id).one()
         except NoResultFound as e:
             return None
         return battle

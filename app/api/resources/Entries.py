@@ -1,10 +1,18 @@
-from flask import jsonify
+from flask import jsonify, request
 from flask_restful import Resource, abort
 from ...models import Entry
-from ..common import entry_schema
+from ..common import entry_schema, entries_list_schema
 
 
 class EntriesListAPI(Resource):
+    def get(self):
+        """
+        Get all entries
+        """
+        count = request.args.get('count', type=int)
+        entries = Entry.get_list(count)
+        return jsonify({"entries": entries_list_schema.dump(entries).data})
+
     def post(self):
         """
         Create new entry

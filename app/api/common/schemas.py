@@ -18,3 +18,11 @@ class EntrySchema(Schema):
     created_on = fields.DateTime()
     user_id = fields.Int()
     battle_id = fields.Int()
+
+
+class UserSchema(Schema):
+    id = fields.Int()
+    username = fields.Str()
+    email = fields.Email()
+    created_on = fields.DateTime()
+    rating = fields.Int()

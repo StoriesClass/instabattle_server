@@ -200,10 +200,10 @@ class User(db.Model):
         None otherwise.
         """
         try:
-            entry = Entry.query.filter_by(id=id).one()
+            user = User.query.filter_by(id=id).one()
         except NoResultFound:
             return None
-        return entry
+        return user
 
     @staticmethod
     def get_list(count=None):

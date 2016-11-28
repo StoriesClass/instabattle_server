@@ -1,11 +1,15 @@
+import random
+
 from sqlalchemy import CheckConstraint, Index
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from app.helpers import try_add
 from . import db
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import desc, func
 from sqlalchemy.ext.hybrid import hybrid_method
-
+from trueskill import Rating, rate_1vs1, quality_1vs1
 
 class Vote(db.Model):
     __tablename__ = 'votes'
@@ -25,6 +29,18 @@ class Vote(db.Model):
 
     chosen_entry = db.Column(db.Enum('left', 'right', name="side_enum",))
 
+    def __init__(self, *args, **kwargs):
+        super(Vote, self).__init__(*args, **kwargs)
+        entry_left = Entry.get_by_id(int(self.entry_left_id))
+        entry_right = Entry.get_by_id(int(self.entry_right_id))
+        rating_left = Rating(entry_left.get_rating())
+        rating_right = Rating(entry_right.get_rating())
+        new_rating_left, new_rating_right = rate_1vs1(rating_left, rating_right) if\
+           self.chosen_entry == 'left' else rate_1vs1(rating_right, rating_left)
+        entry_left.rating = float(new_rating_left)
+        entry_right.rating = float(new_rating_right)
+        try_add(entry_left, entry_right)
+
     def __repr__(self):
         return "<Vote by {} in battle {}>".format(self.user_id, self.battle_id)
 
@@ -38,25 +54,28 @@ class Entry(db.Model):
     created_on = db.Column(db.DateTime, default=datetime.now,
                            onupdate=datetime.now)
     image = db.Column(db.LargeBinary, nullable=False)
-
     user_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('entries'))
     battle_id = db.Column(db.Integer,
                           db.ForeignKey('battles.id'), nullable=False)
     battle = db.relationship('Battle', backref=db.backref('entries'))
+    rating = db.Column(db.Float, default=float(Rating()), nullable=False)
 
     __table_args__ = (Index('ix_location', latitude, longitude),)
 
+    def get_rating(self):
+        return self.rating
+
     @staticmethod
-    def get_by_id(id):
+    def get_by_id(battle_id):
         """
         :param id: identifier of the wanted entry.
         :return: Entry object if there is a battle with given id,
         None otherwise.
         """
         try:
-            entry = Entry.query.filter_by(id=id).one()
+            entry = Entry.query.filter_by(id=battle_id).one()
         except NoResultFound:
             return None
         return entry
@@ -76,7 +95,7 @@ class Entry(db.Model):
         return entries
 
     def __repr__(self):
-        return "<Entry of {} in battle {}>".format(self.user_id, self.battle_id)
+        return "<Entry {}  of user {} in battle {}>".format(self.id, self.user_id, self.battle_id)
 
 
 class Battle(db.Model):
@@ -159,6 +178,23 @@ class Battle(db.Model):
         """
         return self.entries
 
+    def get_voting(self):
+        """
+        Get two entries to vote using sophisticated algorithm.
+        :return: Tuple of two entries if conditions are met. Otherwise false.
+        """
+        entries = self.get_entries()
+
+        if len(entries) >= 2:
+            entry1 = random.choice(entries)
+            entry2 = random.choice(entries)
+            while entry1 == entry2:
+                entry1 = random.choice(entries)
+                entry2 = random.choice(entries)
+            return entry1, entry2
+        return None
+
+
     def __repr__(self):
         return "<Battle {}>".format(self.id)
 
@@ -171,7 +207,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, index=True, nullable=False)
     created_on = db.Column(db.DateTime, default=datetime.now)
     password_hash = db.Column(db.String(128), nullable=False)
-    rating = db.Column(db.Integer, default=1000, nullable=False)
+    rating = db.Column(db.Float, default=float(Rating()), nullable=False)
 
     @property
     def password(self):

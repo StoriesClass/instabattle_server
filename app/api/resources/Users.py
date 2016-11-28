@@ -30,7 +30,7 @@ class UserAPI(Resource):
         """
         user = User.get_by_id(user_id)
         if user is None:
-            abort(400, message="Battle could not be found.")
+            abort(400, message="User could not be found.")
         return jsonify({"user": user_schema.dump(user).data})
 
 

@@ -85,11 +85,20 @@ def generate_fake(user_count=10, battle_count=10, entry_count=10, vote_count=10)
     print("Entry count is", entry_count)
 
     for i in range(vote_count):
+        battle = random.choice(Battle.get_list())
+        entries = battle.get_entries()
+        if len(entries) < 2:
+            continue
+        id1 = random.choice(battle.get_entries()).id
+        id2 = random.choice(battle.get_entries()).id
+        while id1 == id2:
+            id1 = random.choice(battle.get_entries()).id
+            id2 = random.choice(battle.get_entries()).id
         try_add(Vote(created_on=forgery_py.date.datetime(past=True),
                      voter=random.choice(User.query.all()),
-                     entry_left_id=forgery_py.basic.number(at_most=entry_count),
-                     entry_right_id=forgery_py.basic.number(at_most=entry_count),
-                     battle=random.choice(Battle.query.all()),
+                     entry_left_id=id1,
+                     entry_right_id=id2,
+                     battle=battle,
                      chosen_entry=random.choice(['left', 'right'])))
 
     vote_count = len(Entry.query.all())

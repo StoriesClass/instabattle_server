@@ -49,3 +49,11 @@ class BattleEntries(Resource):
         if battle is None:
             abort(400, message="Battle could not be found.")
         return jsonify({"entries": entries_list_schema.dump(battle.get_entries()).data})
+
+
+class BattleVoting(Resource):
+    def get(self):
+        """
+        Get two entries to vote
+        """
+        pass

@@ -3,13 +3,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import desc
+from sqlalchemy import desc, func
+from sqlalchemy.ext.hybrid import hybrid_method
 
 
 class Vote(db.Model):
     __tablename__ = 'votes'
     id = db.Column(db.Integer, primary_key=True)
-    created_on = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    created_on = db.Column(db.DateTime, default=datetime.now,
+                           onupdate=datetime.now)
     voter_id = db.Column(db.Integer,
                          db.ForeignKey('users.id'), nullable=False)
     voter = db.relationship('User', backref=db.backref('votes'))
@@ -33,7 +35,8 @@ class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    created_on = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    created_on = db.Column(db.DateTime, default=datetime.now,
+                           onupdate=datetime.now)
     image = db.Column(db.LargeBinary, nullable=False)
 
     user_id = db.Column(db.Integer,
@@ -54,7 +57,7 @@ class Entry(db.Model):
         """
         try:
             entry = Entry.query.filter_by(id=id).one()
-        except NoResultFound as e:
+        except NoResultFound:
             return None
         return entry
 
@@ -86,10 +89,22 @@ class Battle(db.Model):
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.Text())
     created_on = db.Column(db.DateTime, default=datetime.now)
-    latitude = db.Column(db.Float, CheckConstraint('(-90 <= latitude) AND (latitude <= 90)'))
-    longitude = db.Column(db.Float, CheckConstraint('(-180 <= longitude) AND (longitude <= 180)'))
+    latitude = db.Column(db.Float, CheckConstraint(
+        '(-90 <= latitude) AND (latitude <= 90)'))
+    longitude = db.Column(db.Float, CheckConstraint(
+        '(-180 <= longitude) AND (longitude <= 180)'))
 
     # FIXME doesn't work properly
+    @hybrid_method
+    def distance_to(self, latitude, longitude):
+        return (abs(self.latitude - latitude) / 90 +
+                abs(self.longitude - longitude) / 180) / 2
+
+    @distance_to.expression
+    def distance_to(cls, latitude, longitude):
+        return (func.abs(cls.latitude - latitude) / 90 +
+                func.abs(cls.longitude - longitude) / 180) / 2
+
     @staticmethod
     def get_in_radius(latitude, longitude, radius):
         """
@@ -100,8 +115,8 @@ class Battle(db.Model):
         :return: Battles close to point with coordinates (latitude, longitude)
         according to some "magic" metric.
         """
-        return db.session.query(Battle).filter(abs(Battle.latitude - latitude) < radius*90,
-                                               abs(Battle.longitude - longitude) < radius*180)
+        return db.session.query(Battle).filter(
+            Battle.distance_to(latitude, longitude) < radius).all()
 
     @staticmethod
     def get_by_id(id):
@@ -112,7 +127,7 @@ class Battle(db.Model):
         """
         try:
             battle = Battle.query.filter_by(id=id).one()
-        except NoResultFound as e:
+        except NoResultFound:
             return None
         return battle
 
@@ -135,14 +150,14 @@ class Battle(db.Model):
         Get all votes of the battle.
         :return: List of Vote objects.
         """
-        return self.entries.all()
+        return self.votes
 
     def get_entries(self):
         """
         Get all entries of the battle.
         :return: List of Entry objects.
         """
-        return self.entries.all()
+        return self.entries
 
     def __repr__(self):
         return "<Battle {}>".format(self.id)
@@ -186,7 +201,7 @@ class User(db.Model):
         """
         try:
             entry = Entry.query.filter_by(id=id).one()
-        except NoResultFound as e:
+        except NoResultFound:
             return None
         return entry
 

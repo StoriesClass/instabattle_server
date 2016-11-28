@@ -46,17 +46,10 @@ def generate_fake(user_count=10, battle_count=10, entry_count=10, vote_count=10)
     :param battle_count: Number of fake battles.
     :return: Nothing
     """
-    from sqlalchemy.exc import IntegrityError
     from random import seed
     from os import urandom
+    from app.helpers import try_add
     import forgery_py
-
-    def try_add(obj):
-        db.session.add(obj)
-        try:
-            db.session.commit()
-        except IntegrityError:
-            db.session.rollback()
 
     seed()
     for i in range(user_count):

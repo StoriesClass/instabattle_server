@@ -2,7 +2,6 @@ from flask_restful import Resource, abort
 from ...models import User
 from ..common import user_schema, users_list_schema
 from flask import jsonify, request
-from sqlalchemy.orm.exc import NoResultFound
 
 
 class UsersListAPI(Resource):
@@ -20,7 +19,7 @@ class UsersTop(Resource):
         """
         count = request.args.get('count', type=int)
         users = User.get_list(count)
-        return jsonify({"users": users_list_schema.dump(users).data})
+        return jsonify(users_list_schema.dump(users).data)
 
 
 class UserAPI(Resource):
@@ -31,7 +30,7 @@ class UserAPI(Resource):
         user = User.get_by_id(user_id)
         if user is None:
             abort(400, message="User could not be found.")
-        return jsonify({"user": user_schema.dump(user).data})
+        return jsonify(user_schema.dump(user).data)
 
 
     def put(self, user_id):

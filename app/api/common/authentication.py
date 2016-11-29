@@ -1,6 +1,5 @@
 from flask import g
 from flask_httpauth import HTTPBasicAuth
-from ...api import api_blueprint
 from app.api.common.errors import unauthorized
 from app.models import User, AnonymousUser
 
@@ -29,8 +28,4 @@ def auth_error():
     return unauthorized("Invalid credentials")
 
 
-@api_blueprint.before_request
-@auth.login_required
-def before_request():
-    pass
 

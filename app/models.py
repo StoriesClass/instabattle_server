@@ -3,13 +3,14 @@ import random
 from sqlalchemy import CheckConstraint, Index
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app.helpers import try_add
 from . import db
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import desc, func
 from sqlalchemy.ext.hybrid import hybrid_method
 from trueskill import Rating, rate_1vs1, quality_1vs1
+from .helpers import try_add
+
 
 class Vote(db.Model):
     __tablename__ = 'votes'
@@ -193,7 +194,6 @@ class Battle(db.Model):
                 entry2 = random.choice(entries)
             return entry1, entry2
         return None
-
 
     def __repr__(self):
         return "<Battle {}>".format(self.id)

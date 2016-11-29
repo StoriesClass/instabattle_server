@@ -2,6 +2,7 @@
   <dictionary name="qumeric">
     <words>
       <w>sqlite</w>
+      <w>tablename</w>
     </words>
   </dictionary>
 </component>

@@ -1,11 +1,11 @@
 from flask import Blueprint
 from flask_restful import Api
 
+api_blueprint = Blueprint('api', __name__)
+api = Api(api_blueprint)
+
 
 def create_blueprint():
-    api_blueprint = Blueprint('api', __name__)
-    api = Api(api_blueprint)
-
     from .resources.Users import UsersListAPI, UsersTop, UserAPI, UserResetPassword, UserEntries
     api.add_resource(UsersListAPI, '/users/', endpoint='users_list')
     api.add_resource(UsersTop, '/users/top', endpoint='users_top')
@@ -22,5 +22,8 @@ def create_blueprint():
     from .resources.Entries import EntriesListAPI, EntryAPI
     api.add_resource(EntriesListAPI, '/entries/', endpoint='entries_list')
     api.add_resource(EntryAPI, '/entries/<entry_id>', endpoint='entry')
+
+    from .resources.Auth import TokenAPI
+    api.add_resource(TokenAPI, '/token', endpoint='token')
 
     return api_blueprint

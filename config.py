@@ -5,7 +5,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     SSL_DISABLE = True  # FIXME
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'test'
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # FIXME
     SQLALCHEMY_RECORD_QUERIES = True  # FIXME
 

@@ -1,8 +1,9 @@
 import random
 
+from flask import current_app
 from sqlalchemy import CheckConstraint, Index
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask_login import UserMixin, AnonymousUserMixin, login_manager
 from . import db
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
@@ -10,7 +11,7 @@ from sqlalchemy import desc, func
 from sqlalchemy.ext.hybrid import hybrid_method
 from trueskill import Rating, rate_1vs1, quality_1vs1
 from .helpers import try_add
-
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 class Vote(db.Model):
     __tablename__ = 'votes'
@@ -76,7 +77,7 @@ class Entry(db.Model):
         None otherwise.
         """
         try:
-            entry = Entry.query.filter_by(id=battle_id).one()
+            entry = Entry.query.get(battle_id)
         except NoResultFound:
             return None
         return entry
@@ -139,14 +140,14 @@ class Battle(db.Model):
             Battle.distance_to(latitude, longitude) < radius).all()
 
     @staticmethod
-    def get_by_id(id):
+    def get_by_id(battle_id):
         """
         :param id: identifier of the wanted battle.
         :return: Battle object if there is a battle with given id,
         None otherwise.
         """
         try:
-            battle = Battle.query.filter_by(id=id).one()
+            battle = Battle.query.get(battle_id)
         except NoResultFound:
             return None
         return battle
@@ -199,7 +200,7 @@ class Battle(db.Model):
         return "<Battle {}>".format(self.id)
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -229,14 +230,14 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     @staticmethod
-    def get_by_id(id):
+    def get_by_id(entry_id):
         """
         :param id: identifier of the wanted user.
         :return: Entry object if there is a user with given id,
         None otherwise.
         """
         try:
-            user = User.query.filter_by(id=id).one()
+            user = User.query.get(entry_id)
         except NoResultFound:
             return None
         return user
@@ -256,5 +257,23 @@ class User(db.Model):
             users = users.limit(count)
         return users
 
+    def generate_auth_token(self, expiration):
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
+        return s.dumps({'id': self.id}).decode('ascii')
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        return User.query.get(data['id'])
+
     def __repr__(self):
         return "<User {}>".format(self.username)
+
+class AnonymousUser(AnonymousUserMixin):
+    pass
+
+login_manager.anonymous_user = AnonymousUser

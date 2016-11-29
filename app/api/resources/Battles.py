@@ -2,9 +2,11 @@ from flask import jsonify, request
 from flask_restful import Resource, abort
 from ...models import Battle
 from ..common import battle_schema, battles_list_schema, entries_list_schema
+from ..common.authentication import auth
 
 
 class BattlesListAPI(Resource):
+    @auth.login_required
     def get(self):
         latitude = request.args.get('latitude', type=float)
         longitude = request.args.get('longitude', type=float)

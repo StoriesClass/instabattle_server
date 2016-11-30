@@ -1,6 +1,7 @@
-from flask_restful import Resource
 from flask import g, jsonify
-from ..common.errors import unauthorized
+from flask_restful import Resource
+
+from app.api.errors import unauthorized
 
 
 class TokenAPI(Resource):

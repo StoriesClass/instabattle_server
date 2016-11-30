@@ -1,4 +1,4 @@
-from . import errors, schemas
+from . import schemas
 from .schemas import BattleSchema, EntrySchema, UserSchema
 
 battle_schema = BattleSchema()

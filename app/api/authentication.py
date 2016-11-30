@@ -1,13 +1,13 @@
 from flask import g
 from flask_httpauth import HTTPBasicAuth
-from app.api.common.errors import unauthorized
-from app.models import User, AnonymousUser
+from .errors import unauthorized
 
 auth = HTTPBasicAuth()
 
 
 @auth.verify_password
 def verify_password(email_or_token, password):
+    from app.models import User, AnonymousUser
     if email_or_token == '':
         g.current_user = AnonymousUser()
         return True

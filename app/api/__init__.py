@@ -1,10 +1,10 @@
-from flask import Blueprint, app
+from flask import Blueprint, jsonify
 from flask_restful import Api
-from .resources.Users import UsersListAPI, UsersTop, UserAPI, UserResetPassword, UserEntries
+from .resources.Auth import TokenAPI
 from .resources.Battles import BattlesListAPI, BattleAPI, BattleEntries, BattleVoting
 from .resources.Entries import EntriesListAPI, EntryAPI
-from .resources.Auth import TokenAPI
-from .common.authentication import auth
+from .resources.Users import UsersListAPI, UsersTop, UserAPI, UserResetPassword, UserEntries
+from .authentication import auth
 
 api_blueprint = Blueprint('api', __name__)
 
@@ -31,3 +31,24 @@ api.add_resource(TokenAPI, '/token', endpoint='get_token')
 @auth.login_required
 def before_request():
     pass
+
+
+@api_blueprint.app_errorhandler(403)
+def forbidden(message=None):
+    response = jsonify({'error': 'forbidden', 'message': message})
+    response.status_code = 403
+    return response
+
+
+@api_blueprint.app_errorhandler(404)
+def page_not_found(e):
+    response = jsonify({'error': 'not found'})
+    response.status_code = 404
+    return response
+
+
+@api_blueprint.app_errorhandler(500)
+def internal_server_error(e):
+    response = jsonify({'error': 'internal server error'})
+    response.status_code = 500
+    return response

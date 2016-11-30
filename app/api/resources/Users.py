@@ -1,4 +1,7 @@
-from flask_restful import Resource, abort
+from flask_restful import Resource, abort, reqparse
+from sqlalchemy.exc import IntegrityError
+
+from app import db
 from ...models import User
 from ..common import user_schema, users_list_schema
 from flask import jsonify, request
@@ -9,7 +12,23 @@ class UsersListAPI(Resource):
         """
         Create new user
         """
-        pass
+        username = request.headers.get('username', type=str)
+        email = request.headers.get('email', type=str)
+        password = request.headers.get('password', type=str)
+        if username and email and password:
+            user = User(username=username,
+                        email=email,
+                        password=password)
+            db.session.add(user)
+            try:
+                db.session.commit()
+                user = db.session.refresh(user)
+                return jsonify(user_schema.dump(user).data)
+            except IntegrityError:
+                db.session.rollback()
+                abort(400, message="Could not create user")
+        else:
+            abort(400, message="Provide enough data")
 
 
 class UsersTop(Resource):

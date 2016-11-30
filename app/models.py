@@ -213,6 +213,10 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     rating = db.Column(db.Float, default=float(Rating()), nullable=False)
 
+    def __init__(self, *args, **kwargs):
+        UserMixin.__init__(self)
+        db.Model.__init__(self, *args, **kwargs)
+
     @property
     def password(self):
         raise AttributeError("Password is not a readable attribute")

@@ -26,7 +26,20 @@ class ProductionConfig(Config):
                               'postgresql+psycopg2://test:test@localhost:5432/instabattle_test'
 
 
+class HerokuConfig(ProductionConfig):
+    @classmethod
+    def init_app(cls, app):
+        ProductionConfig.init_app(app)
+
+        # log to stderr
+        import logging
+        from logging import StreamHandler
+        file_handler = StreamHandler()
+        file_handler.setLevel(logging.WARNING)
+        app.logger.addHandler(file_handler)
+
 config = {
     'testing': TestingConfig,
-    'production': ProductionConfig
+    'production': ProductionConfig,
+    'heroku': HerokuConfig
 }

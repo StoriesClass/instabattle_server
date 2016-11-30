@@ -13,6 +13,7 @@ from trueskill import Rating, rate_1vs1, quality_1vs1
 from .helpers import try_add
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
+
 class Vote(db.Model):
     __tablename__ = 'votes'
     id = db.Column(db.Integer, primary_key=True)
@@ -38,7 +39,7 @@ class Vote(db.Model):
         rating_left = Rating(entry_left.get_rating())
         rating_right = Rating(entry_right.get_rating())
         new_rating_left, new_rating_right = rate_1vs1(rating_left, rating_right) if\
-           self.chosen_entry == 'left' else rate_1vs1(rating_right, rating_left)
+            self.chosen_entry == 'left' else rate_1vs1(rating_right, rating_left)
         entry_left.rating = float(new_rating_left)
         entry_right.rating = float(new_rating_right)
         try_add(entry_left, entry_right)
@@ -72,7 +73,7 @@ class Entry(db.Model):
     @staticmethod
     def get_by_id(battle_id):
         """
-        :param id: identifier of the wanted entry.
+        :param battle_id: identifier of the wanted entry.
         :return: Entry object if there is a battle with given id,
         None otherwise.
         """
@@ -190,9 +191,11 @@ class Battle(db.Model):
         if len(entries) >= 2:
             entry1 = random.choice(entries)
             entry2 = random.choice(entries)
-            while entry1 == entry2:
+            impatience = 0
+            while entry1 == entry2 or quality_1vs1(entry1, entry2) < 0.3 - impatience:
                 entry1 = random.choice(entries)
                 entry2 = random.choice(entries)
+                impatience += 0.01
             return entry1, entry2
         return None
 
@@ -272,6 +275,7 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return "<User {}>".format(self.username)
+
 
 class AnonymousUser(AnonymousUserMixin):
     pass

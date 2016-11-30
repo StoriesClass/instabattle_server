@@ -42,6 +42,16 @@ def test(test=None):
 
 
 @manager.command
+def deploy():
+    """
+    Deploy command. Normally called by initialization scripts on hosting.
+    """
+    from flask_migrate import upgrade
+
+    upgrade()
+
+
+@manager.command
 def generate_fake(user_count=10, battle_count=10, entry_count=10, vote_count=10):
     """
     Generate fake users and battles

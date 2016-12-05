@@ -14,6 +14,42 @@ from .helpers import try_add
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
+class Permission:
+    PARTICIPATE = 0x01
+    VOTE = 0x02
+    CREATE = 0x04
+    APPROVE = 0x08
+    MODERATE = 0x0f
+    ADMINISTER = 0x80
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    default = db.Column(db.Boolean, default=False, index=True)
+    permissions = db.Column(db.Integer)
+    users = db.relationship('User', backref='role', lazy='dynamic')
+
+    @staticmethod
+    def insert_roles():
+        roles = (('User', Permission.PARTICIPATE | Permission.VOTE |
+                  Permission.CREATE, True),
+                 ('Moderator', Permission.PARTICIPATE | Permission.SUGGEST |
+                  Permission.APPROVE, False), ('Administrator', 0xff, False))
+        for name, permissions, default in roles:
+            role = Role.query.filter_by(name=name).first()
+            if not role:
+                role = Role(name=name)
+            role.permissions = permissions
+            role.default = default
+            db.session.add(role)
+        db.session.commit()
+
+    def __repr__(self):
+        return "<Role {}>".format(self.name)
+
+
 class Vote(db.Model):
     __tablename__ = 'votes'
     id = db.Column(db.Integer, primary_key=True)
@@ -45,7 +81,7 @@ class Vote(db.Model):
         try_add(entry_left, entry_right)
 
     def __repr__(self):
-        return "<Vote by {} in battle {}>".format(self.user_id, self.battle_id)
+        return "<Vote by {} in battle {}>".format(self.voter_id, self.battle_id)
 
 
 class Entry(db.Model):
@@ -94,7 +130,7 @@ class Entry(db.Model):
         if count is None:
             entries = Entry.query.all()
         else:
-            entries = Entry.query.limit(count)
+            entries = Entry.query.limit(count).all()
         return entries
 
     def __repr__(self):
@@ -143,7 +179,7 @@ class Battle(db.Model):
     @staticmethod
     def get_by_id(battle_id):
         """
-        :param id: identifier of the wanted battle.
+        :param battle_id: identifier of the wanted battle.
         :return: Battle object if there is a battle with given id,
         None otherwise.
         """
@@ -164,7 +200,7 @@ class Battle(db.Model):
         if count is None:
             battles = Battle.query.all()
         else:
-            battles = Battle.query.limit(count)
+            battles = Battle.query.limit(count).all()
         return battles
 
     def get_votes(self):
@@ -207,6 +243,7 @@ class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     username = db.Column(db.String(64), unique=True, index=True, nullable=False)
     email = db.Column(db.String(120), unique=True, index=True, nullable=False)
     created_on = db.Column(db.DateTime, default=datetime.now)
@@ -261,7 +298,7 @@ class User(UserMixin, db.Model):
         if count is None:
             users = users.all()
         else:
-            users = users.limit(count)
+            users = users.limit(count).all()
         return users
 
     def generate_auth_token(self, expiration):

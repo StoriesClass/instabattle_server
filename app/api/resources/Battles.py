@@ -14,7 +14,7 @@ class BattlesListAPI(Resource):
             battles = Battle.get_in_radius(latitude, longitude, radius)
         else:
             battles = Battle.get_list()
-        return jsonify({"battles": battles_list_schema.dump(battles).data})
+        return jsonify(battles_list_schema.dump(battles).data)
 
     def post(self):
         """
@@ -32,7 +32,7 @@ class BattleAPI(Resource):
         battle = Battle.get_by_id(battle_id)
         if battle is None:
             abort(400, message="Battle could not be found.")
-        return jsonify({"battle": battle_schema.dump(battle).data})
+        return jsonify(battle_schema.dump(battle).data)
 
     def put(self, battle_id):
         """
@@ -49,7 +49,7 @@ class BattleEntries(Resource):
         battle = Battle.get_by_id(battle_id)
         if battle is None:
             abort(400, message="Battle could not be found.")
-        return jsonify({"entries": entries_list_schema.dump(battle.get_entries()).data})
+        return jsonify(entries_list_schema.dump(battle.get_entries()).data)
 
 
 class BattleVoting(Resource):

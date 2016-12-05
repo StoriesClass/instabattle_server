@@ -30,7 +30,7 @@ class BattleModelTestCase(unittest.TestCase):
 
     def test_voting(self):
         from app.helpers import (generate_fake_entry, generate_fake_vote,
-                                   generate_fake_user, generate_fake_battle)
+                                 generate_fake_user, generate_fake_battle)
         voter = generate_fake_user()
         u_left = generate_fake_user()
         u_right = generate_fake_user()

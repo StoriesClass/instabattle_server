@@ -11,7 +11,7 @@ class EntriesListAPI(Resource):
         """
         count = request.args.get('count', type=int)
         entries = Entry.get_list(count)
-        return jsonify({"entries": entries_list_schema.dump(entries).data})
+        return jsonify(entries_list_schema.dump(entries).data)
 
     def post(self):
         """
@@ -28,7 +28,7 @@ class EntryAPI(Resource):
         entry = Entry.get_by_id(entry_id)
         if entry is None:
             abort(400, message="Entry could not be found.")
-        return jsonify({"entry": entry_schema.dump(entry).data})
+        return jsonify(entry_schema.dump(entry).data)
 
     def put(self, entry_id):
         """

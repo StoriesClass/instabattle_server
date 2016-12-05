@@ -11,8 +11,8 @@ def try_add(*objects):
     :param objects: updated models
     :return: True if adding was successful, false otherwise
     """
-    for obj in objects:
-        db.session.add(obj)
+    objects = filter(lambda x: x is not None, objects)
+    db.session.add_all(objects)
     try:
         db.session.commit()
         return True

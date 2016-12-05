@@ -52,7 +52,7 @@ def deploy():
 
 
 @manager.command
-def generate_fake(user_count=10, battle_count=10, entry_count=10, vote_count=10):
+def generate_fake(user_count=7, battle_count=21, entry_count=100, vote_count=200):
     """
     Generate fake users and battles
     :param user_count: Number of fake users.
@@ -64,37 +64,25 @@ def generate_fake(user_count=10, battle_count=10, entry_count=10, vote_count=10)
                              generate_fake_entry, generate_fake_vote)
 
     seed()
-    for i in range(user_count):
-        user = generate_fake_user()
-        if user:
-            try_add(user)
+    try_add(*(generate_fake_user() for _ in range(user_count)))
 
     # Because there is a small chance of collisions
     user_count = len(User.query.all())
     print("User count is", user_count)
 
-    for i in range(battle_count):
-        battle = generate_fake_battle()
-        if battle:
-            try_add(battle)
+    try_add(*(generate_fake_battle() for _ in range(battle_count)))
 
-    battle_count = len(Battle.query.all())
+    battle_count = len(Battle.get_list())
     print("Battle count is", battle_count)
 
-    for i in range(entry_count):
-        entry = generate_fake_entry()
-        if entry:
-            try_add(entry)
+    try_add(*(generate_fake_entry() for _ in range(entry_count)))
 
-    entry_count = len(Entry.query.all())
+    entry_count = len(Entry.get_list())
     print("Entry count is", entry_count)
 
-    for i in range(vote_count):
-        vote = generate_fake_vote()
-        if vote:
-            try_add(vote)
+    try_add(*(generate_fake_vote() for _ in range(vote_count)))
 
-    vote_count = len(Entry.query.all())
+    vote_count = len(Vote.query.all())
     print("Vote count is", vote_count)
 
 

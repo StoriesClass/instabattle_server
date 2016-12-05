@@ -95,3 +95,6 @@ ENV/
 
 # Databases
 *.sqlite
+
+# Local scripts
+recreate_test_db.sh

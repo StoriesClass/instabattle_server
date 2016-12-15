@@ -98,3 +98,6 @@ ENV/
 
 # Local scripts
 recreate_test_db.sh
+
+# Google Cloud Storage key
+service_account.json

@@ -41,6 +41,7 @@ class EntrySchema(Schema):
     latitude = fields.Float(required=True, validate=latitude_validator)
     longitude = fields.Float(required=True, validate=longitude_validator)
     created_on = fields.DateTime(dump_only=True)
+    image = fields.Str(dump_only=True)
     user_id = fields.Int(required=True)
     battle_id = fields.Int(required=True)
     rating = fields.Float(required=True, dump_only=True)

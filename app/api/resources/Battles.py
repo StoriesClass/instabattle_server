@@ -118,5 +118,5 @@ class BattleVoting(Resource):
         try:
             entry1, entry2 = battle.get_voting()
             return jsonify(entries_list_schema.dump([entry1, entry2]).data)
-        except ValueError:
-            abort(400, message="Couldn't get voting. Probably not enough entries in battle")
+        except TypeError:
+            abort(400, message="Couldn't get voting. Probably not enough entries in the git battle")

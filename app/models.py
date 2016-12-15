@@ -92,7 +92,7 @@ class Entry(db.Model):
     longitude = db.Column(db.Float)
     created_on = db.Column(db.DateTime, default=datetime.now,
                            onupdate=datetime.now)
-    image = db.Column(db.LargeBinary, nullable=False)
+    image = db.Column(db.String, nullable=False)
     user_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('entries'))
@@ -125,12 +125,13 @@ class Entry(db.Model):
         Return all entries if count is not provided,
         otherwise only given number of entries.
         :param count: Number of entries to get.
-        :return: List of Entry objects.
+        :return: List of Entry objects sorted by rating.
         """
+        entries = Entry.query.order_by(desc(Entry.rating))
         if not count:
-            entries = Entry.query.all()
+            entries = entries.all()
         else:
-            entries = Entry.query.limit(count).all()
+            entries = entries.limit(count).all()
         return entries
 
     def __repr__(self):

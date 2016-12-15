@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify
-from flask_restful import Api
+from flask_restful import Api, abort
+from webargs.flaskparser import parser
+
 from .resources.Auth import TokenAPI
 from .resources.Battles import BattlesListAPI, BattleAPI, BattleEntries, BattleVoting
 from .resources.Entries import EntriesListAPI, EntryAPI
@@ -52,3 +54,12 @@ def internal_server_error(e):
     response = jsonify({'error': 'internal server error'})
     response.status_code = 500
     return response
+
+# This error handler is necessary for usage with Flask-RESTful
+@parser.error_handler
+def handle_request_parsing_error(err):
+    """webargs error handler that uses Flask-RESTful's abort function to return
+    a JSON error response to the client.
+    """
+    code, msg = getattr(err, 'status_code', 400), getattr(err, 'message', 'Invalid Request')
+    abort(code, message=msg)

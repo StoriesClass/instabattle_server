@@ -46,7 +46,7 @@ def generate_fake_entry(**kwargs):
                  longitude=kwargs.get('longitude', forgery_py.geo.longitude()),
                  user=kwargs.get('user') or random.choice(User.query.all()),
                  battle=kwargs.get('battle') or random.choice(Battle.query.all()),
-                 image=kwargs.get('image', bytes(1024)))  # FIXME temporary
+                 image=kwargs.get('image', 'vn.png'))  # FIXME temporary
 
 
 def generate_fake_vote(**kwargs):

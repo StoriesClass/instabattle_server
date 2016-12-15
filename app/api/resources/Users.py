@@ -1,42 +1,40 @@
 from flask_restful import Resource, abort, reqparse
+from marshmallow import validate
 from sqlalchemy.exc import IntegrityError
+from webargs import fields
+from webargs.flaskparser import use_kwargs
 
 from app import db
+from app.helpers import try_add
 from ...models import User
-from ..common import user_schema, users_list_schema
+from ..common import user_schema, users_list_schema, entries_list_schema
 from flask import jsonify, request
 
 
 class UsersListAPI(Resource):
-    def post(self):
+    @use_kwargs(user_schema)
+    def post(self, username, email, password):
         """
         Create new user
+        :return: battle JSON if the user was created
         """
-        username = request.headers.get('username', type=str)
-        email = request.headers.get('email', type=str)
-        password = request.headers.get('password', type=str)
-        if username and email and password:
-            user = User(username=username,
-                        email=email,
-                        password=password)
-            db.session.add(user)
-            try:
-                db.session.commit()
-                user = db.session.refresh(user)
-                return jsonify(user_schema.dump(user).data)
-            except IntegrityError:
-                db.session.rollback()
-                abort(400, message="Could not create user")
-        else:
-            abort(400, message="Provide enough data")
+        user = User(username=username,
+                    email=email,
+                    password=password)
 
+        if try_add(user):
+            return jsonify(user_schema.dump(user).data)
+        else:
+            abort(400, message="Couldn't create new user")
 
 class UsersTop(Resource):
-    def get(self):
+    @use_kwargs({'count': fields.Int(validate=validate.Range(min=1))})
+    def get(self, count):
+        # FIXME rating system?
         """
         Get users top
+        :return: list of top users
         """
-        count = request.args.get('count', type=int)
         users = User.get_list(count)
         return jsonify(users_list_schema.dump(users).data)
 
@@ -45,18 +43,31 @@ class UserAPI(Resource):
     def get(self, user_id):
         """
         Get existing user
+        :return: user
         """
         user = User.get_by_id(user_id)
+
         if user is None:
-            abort(400, message="User could not be found.")
+            abort(404, message="User could not be found.")
         return jsonify(user_schema.dump(user).data)
 
 
-    def put(self, user_id):
+    @use_kwargs(user_schema)
+    def put(self, user_id, email, password, **kwargs):
         """
         Update user profile
         """
-        pass
+        user = User.query.get_or_404(user_id) # FIXME test
+        if email:
+            user.email = email
+        if password:
+            user.password = password
+
+        if try_add(user):
+            return jsonify(user_schema.dump(user).data)
+        else:
+            abort(400, message="Couldn't change user info")
+
 
 
 class UserResetPassword(Resource):
@@ -72,4 +83,5 @@ class UserEntries(Resource):
         """
         Get all battle entries of the user
         """
-        user = User.get_by_id(user_id)
+        user = User.query.get_or_404(user_id)
+        return jsonify(entries_list_schema.dump(user.get_entries()).data)

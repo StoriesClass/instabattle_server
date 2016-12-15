@@ -288,6 +288,9 @@ class User(UserMixin, db.Model):
             return None
         return user
 
+    def get_entries(self):
+        return self.entries
+
     @staticmethod
     def get_list(count=None):
         """
@@ -297,7 +300,7 @@ class User(UserMixin, db.Model):
         :return: List of User objects sorted by rating.
         """
         users = User.query.order_by(desc(User.rating))
-        if count is None:
+        if not count :
             users = users.all()
         else:
             users = users.limit(count).all()

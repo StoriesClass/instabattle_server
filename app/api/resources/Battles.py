@@ -39,7 +39,7 @@ class BattlesListAPI(Resource):
     def post(self, latitude, longitude, name, description, creator_id):
         """
         Create new battle
-        :return: battle's id if the battle was created
+        :return: battle JSON if the battle was created
         """
         creator = User.get_by_id(creator_id)
 
@@ -50,11 +50,9 @@ class BattlesListAPI(Resource):
                         creator=creator)
 
         if try_add(battle):
-            return {'battle_id': battle.id}, 201
+            return jsonify(battle_schema.dump(battle).data), 201
         else:
             abort(400, message="Couldn't create new battle")
-
-
 
 
 class BattleAPI(Resource):
@@ -77,7 +75,7 @@ class BattleAPI(Resource):
     def put(self, battle_id, name, description):
         """
         Update battle's info
-        :return: battle's id if the battle was updated
+        :return: updated battle
         """
         battle = Battle.get_by_id(battle_id)
         if not battle:
@@ -92,7 +90,7 @@ class BattleAPI(Resource):
         from sqlalchemy.exc import IntegrityError
         try:
             db.session.commit()
-            return {'battle_id': battle_id}, 200  # FIXME
+            return jsonify(battle_schema.dump(battle).data)
         except IntegrityError:
             db.session.rollback()
             return abort(400, message="Couldn't update user.")

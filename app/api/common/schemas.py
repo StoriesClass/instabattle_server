@@ -13,6 +13,7 @@ class BattleSchema(Schema):
     latitude = fields.Float(required=True, validate=latitude_validator)
     longitude = fields.Float(required=True, validate=longitude_validator)
     entry_count = fields.Method("get_entry_count", dump_only=True)
+    radius = fields.Float()
 
     def get_entry_count(self, obj):
         # FIXME poor performance
@@ -26,8 +27,9 @@ class UserSchema(Schema):
     id = fields.Int(dump_only=True)
     username = fields.Str(required=True, validate=validate.Length(min=3))
     email = fields.Email(required=True, validate=validate.Email())
+    password = fields.Str(load_only=True)
     created_on = fields.DateTime(dump_only=True)
-    rating = fields.Float(required=True, validate=validate.Range(0, 1000))
+    rating = fields.Float(dump_only=True, validate=validate.Range(0, 1000))
 
     class Meta:
         strict = True

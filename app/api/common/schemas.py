@@ -1,12 +1,12 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
-from app.api.common.validators import user_exists_in_db, latitude_validator, longitude_validator, exists_in_db
+from app.api.common.validators import latitude_validator, longitude_validator, exists_in_db
 from app.models import Battle, Entry, User
 
 
 class BattleSchema(Schema):
     id = fields.Int(dump_only=True)
-    creator_id = fields.Int(required=True, validate=user_exists_in_db)
+    creator_id = fields.Int(required=True, validate=exists_in_db("User"))
     name = fields.Str(required=True)
     description = fields.Str(missing='')
     created_on = fields.DateTime(dump_only=True)
@@ -19,7 +19,19 @@ class BattleSchema(Schema):
         return len(Battle.get_by_id(obj.id).get_entries())
 
     class Meta:
+        strict = True  # For using schemas with webargs
+
+
+class UserSchema(Schema):
+    id = fields.Int(dump_only=True)
+    username = fields.Str(required=True, validate=validate.Length(min=3))
+    email = fields.Email(required=True, validate=validate.Email())
+    created_on = fields.DateTime(dump_only=True)
+    rating = fields.Float(required=True, validate=validate.Range(0, 1000))
+
+    class Meta:
         strict = True
+
 
 
 class EntrySchema(Schema):
@@ -43,15 +55,9 @@ class VoteSchema(Schema):
     entry_right_id = fields.Int(required=True, validate=exists_in_db("Entry"))
     battle_id = fields.Int(required=True, validate=exists_in_db("Battle"))
     chosen_entry = fields.Str(required=True,
-                              validate=lambda s: s in ['left', 'right'])
-
-
-class UserSchema(Schema):
-    id = fields.Int()
-    username = fields.Str()
-    email = fields.Email()
-    created_on = fields.DateTime()
-    rating = fields.Float()
+                              validate=validate.OneOf(['left', 'right']))
 
     class Meta:
         strict = True
+
+

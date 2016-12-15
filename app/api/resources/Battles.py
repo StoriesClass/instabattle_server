@@ -3,7 +3,7 @@ from flask_restful import Resource, abort
 
 from app import db
 from app.api.common import BattleSchema
-from app.api.common.validators import battle_exists_in_db, latitude_validator, longitude_validator
+from app.api.common.validators import latitude_validator, longitude_validator
 from app.helpers import try_add
 from ...models import Battle, User
 from ..common import battle_schema, battles_list_schema, entries_list_schema

@@ -1,44 +1,101 @@
 from flask import jsonify, request
 from flask_restful import Resource, abort
 
-from ...models import Battle
+from app import db
+from app.api.common import BattleSchema
+from app.api.common.validators import battle_exists_in_db, latitude_validator, longitude_validator
+from app.helpers import try_add
+from ...models import Battle, User
 from ..common import battle_schema, battles_list_schema, entries_list_schema
+from webargs import fields
+from webargs.flaskparser import parser, use_args, use_kwargs
 
 
 class BattlesListAPI(Resource):
-    def get(self):
-        latitude = request.args.get('latitude', type=float)
-        longitude = request.args.get('longitude', type=float)
-        radius = request.args.get('radius', type=float)
-        if latitude and longitude and radius is not None:
+
+    get_args = {
+        'latitude': fields.Float(validate=latitude_validator),
+        'longitude': fields.Float(validate=longitude_validator),
+        'radius': fields.Float()
+    }
+
+    @use_kwargs(get_args)
+    def get(self, latitude, longitude, radius):
+        """
+        Get list of battles by latitude, longitude and radius
+        If no arguments is provided returns list of all battles.
+        :return: list of battles JSON bump
+        """
+
+        if latitude and longitude and radius:
             battles = Battle.get_in_radius(latitude, longitude, radius)
+        elif latitude or longitude or radius:
+            abort(400, message="Wrong arguments. Maybe typo?")
         else:
             battles = Battle.get_list()
         return jsonify(battles_list_schema.dump(battles).data)
 
-    def post(self):
+    @use_kwargs(battle_schema)
+    def post(self, latitude, longitude, name, description, creator_id):
         """
         Create new battle
+        :return: battle's id if the battle was created
         """
-        # FIXME need params
-        battle = Battle(name="Battle")
+        creator = User.get_by_id(creator_id)
+
+        battle = Battle(latitude=latitude,
+                        longitude=longitude,
+                        name=name,
+                        description=description,
+                        creator=creator)
+
+        if try_add(battle):
+            return {'battle_id': battle.id}, 201
+        else:
+            abort(400, message="Couldn't create new battle")
+
+
 
 
 class BattleAPI(Resource):
     def get(self, battle_id):
         """
         Get existing battle
+        :return: battle info in JSON format
         """
         battle = Battle.get_by_id(battle_id)
         if battle is None:
             abort(400, message="Battle could not be found.")
         return jsonify(battle_schema.dump(battle).data)
 
-    def put(self, battle_id):
+    put_args = {
+        'name': fields.Str(),
+        'description': fields.Str()
+    }
+
+    @use_kwargs(put_args)
+    def put(self, battle_id, name, description):
         """
-        Update battles info
+        Update battle's info
+        :return: battle's id if the battle was updated
         """
         battle = Battle.get_by_id(battle_id)
+        if not battle:
+            return abort(400, message="No such battle.")
+
+        if name:
+            battle.name = name
+        if description:
+            battle.description = description
+
+        db.session.add(battle)
+        from sqlalchemy.exc import IntegrityError
+        try:
+            db.session.commit()
+            return {'battle_id': battle_id}, 200  # FIXME
+        except IntegrityError:
+            db.session.rollback()
+            return abort(400, message="Couldn't update user.")
 
 
 class BattleEntries(Resource):
@@ -48,13 +105,20 @@ class BattleEntries(Resource):
         """
         battle = Battle.get_by_id(battle_id)
         if battle is None:
-            abort(400, message="Battle could not be found.")
+            abort(404, message="Battle could not be found.")
         return jsonify(entries_list_schema.dump(battle.get_entries()).data)
 
 
 class BattleVoting(Resource):
-    def get(self):
+    def get(self, battle_id):
         """
         Get two entries to vote
         """
-        pass
+        battle = Battle.get_by_id(battle_id)
+        if battle is None:
+            abort(404, message="Battle could not not be found.")
+        try:
+            entry1, entry2 = battle.get_voting()
+            return jsonify(entries_list_schema.dump([entry1, entry2]).data)
+        except ValueError:
+            abort(400, message="Couldn't get voting. Probably not enough entries in battle")

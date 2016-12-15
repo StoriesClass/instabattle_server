@@ -1,24 +1,49 @@
 from marshmallow import Schema, fields
 
+from app.api.common.validators import user_exists_in_db, latitude_validator, longitude_validator, exists_in_db
+from app.models import Battle, Entry, User
+
 
 class BattleSchema(Schema):
-    id = fields.Int()
-    creator_id = fields.Int()
-    name = fields.Str()
-    description = fields.Str()
-    created_on = fields.DateTime()
-    latitude = fields.Float()
-    longitude = fields.Float()
+    id = fields.Int(dump_only=True)
+    creator_id = fields.Int(required=True, validate=user_exists_in_db)
+    name = fields.Str(required=True)
+    description = fields.Str(missing='')
+    created_on = fields.DateTime(dump_only=True)
+    latitude = fields.Float(required=True, validate=latitude_validator)
+    longitude = fields.Float(required=True, validate=longitude_validator)
+    entry_count = fields.Method("get_entry_count", dump_only=True)
+
+    def get_entry_count(self, obj):
+        # FIXME poor performance
+        return len(Battle.get_by_id(obj.id).get_entries())
+
+    class Meta:
+        strict = True
 
 
 class EntrySchema(Schema):
-    id = fields.Int()
-    latitude = fields.Float()
-    longitude = fields.Float()
-    created_on = fields.DateTime()
+    id = fields.Int(dump_only=True)
+    latitude = fields.Float(required=True, validate=latitude_validator)
+    longitude = fields.Float(required=True, validate=longitude_validator)
+    created_on = fields.DateTime(dump_only=True)
     user_id = fields.Int()
     battle_id = fields.Int()
-    rating = fields.Float()
+    rating = fields.Float(required=True)
+
+    class Meta:
+        strict = True
+
+
+class VoteSchema(Schema):
+    id = fields.Int(dump_only=True)
+    created_on = fields.DateTime(dump_only=True)
+    voter_id = fields.Int(required=True, validate=exists_in_db("User"))
+    entry_left_id = fields.Int(required=True, validate=exists_in_db("Entry"))
+    entry_right_id = fields.Int(required=True, validate=exists_in_db("Entry"))
+    battle_id = fields.Int(required=True, validate=exists_in_db("Battle"))
+    chosen_entry = fields.Str(required=True,
+                              validate=lambda s: s in ['left', 'right'])
 
 
 class UserSchema(Schema):
@@ -27,3 +52,6 @@ class UserSchema(Schema):
     email = fields.Email()
     created_on = fields.DateTime()
     rating = fields.Float()
+
+    class Meta:
+        strict = True

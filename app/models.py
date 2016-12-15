@@ -148,9 +148,9 @@ class Battle(db.Model):
     description = db.Column(db.Text())
     created_on = db.Column(db.DateTime, default=datetime.now)
     latitude = db.Column(db.Float, CheckConstraint(
-        '(-90 <= latitude) AND (latitude <= 90)'))
+        '(-90 <= latitude) AND (latitude <= 90)'), nullable=False)
     longitude = db.Column(db.Float, CheckConstraint(
-        '(-180 <= longitude) AND (longitude <= 180)'))
+        '(-180 <= longitude) AND (longitude <= 180)'), nullable=False)
 
     # FIXME doesn't work properly
     @hybrid_method
@@ -227,8 +227,10 @@ class Battle(db.Model):
         if len(entries) >= 2:
             entry1 = random.choice(entries)
             entry2 = random.choice(entries)
+            rating1 = Rating(entry1.rating)
+            rating2 = Rating(entry2.rating)
             impatience = 0
-            while entry1 == entry2 or quality_1vs1(entry1, entry2) < 0.3 - impatience:
+            while entry1 == entry2 or quality_1vs1(rating1, rating2) < 0.3 - impatience:
                 entry1 = random.choice(entries)
                 entry2 = random.choice(entries)
                 impatience += 0.01

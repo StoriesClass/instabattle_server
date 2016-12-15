@@ -127,7 +127,7 @@ class Entry(db.Model):
         :param count: Number of entries to get.
         :return: List of Entry objects.
         """
-        if count is None:
+        if not count:
             entries = Entry.query.all()
         else:
             entries = Entry.query.limit(count).all()
@@ -197,7 +197,7 @@ class Battle(db.Model):
         :param count: Number of battles to get.
         :return: List of Battle objects.
         """
-        if count is None:
+        if not count:
             battles = Battle.query.all()
         else:
             battles = Battle.query.limit(count).all()

@@ -16,7 +16,8 @@ def try_add(*objects):
     try:
         db.session.commit()
         return True
-    except IntegrityError:
+    except IntegrityError as e:
+        print(e)
         db.session.rollback()
         return False
 

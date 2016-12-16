@@ -27,7 +27,6 @@ class UsersListAPI(Resource):
         else:
             abort(400, message="Couldn't create new user")
 
-class UsersTop(Resource):
     @use_kwargs({'count': fields.Int(validate=validate.Range(min=1))})
     def get(self, count):
         # FIXME rating system?

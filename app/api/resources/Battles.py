@@ -119,14 +119,14 @@ class BattleAPI(Resource):
 
 
 class BattleEntries(Resource):
-    def get(self, battle_id):
+    def get(self, battle_id, count=None):
         """
         Get all entries of the battle
         """
-        battle = Battle.get_by_id(battle_id)
+        battle = Battle.query.get_or_404(battle_id)
         if battle is None:
             abort(404, message="Battle could not be found.")
-        return jsonify(entries_list_schema.dump(battle.get_entries()).data)
+        return jsonify(entries_list_schema.dump(battle.get_entries(count)).data)
 
 
 class BattleVoting(Resource):

@@ -210,13 +210,13 @@ class Battle(db.Model):
         """
         return self.votes
 
-    def get_entries(self):
+    def get_entries(self, count=None):
         """
         Get all entries of the battle.
         :return: List of Entry objects.
         """
-        return self.entries
-
+        # FIXME perfomance
+        return sorted(self.entries, key=lambda e: -e.rating)[:count if count else len(self.entries)]
     def get_voting(self):
         """
         Get two entries to vote using sophisticated algorithm.

@@ -18,6 +18,7 @@ def make_shell_context():
     """
     from app.helpers import (generate_fake_user, generate_fake_battle,
                              generate_fake_entry,generate_fake_vote)
+    from app.helpers import try_add
     return dict(db=db,
                 app=app,
                 User=User,
@@ -27,7 +28,8 @@ def make_shell_context():
                 fake_user=generate_fake_user,
                 fake_battle=generate_fake_battle,
                 fake_entry=generate_fake_entry,
-                fake_vote=generate_fake_vote)
+                fake_vote=generate_fake_vote,
+                try_add=try_add)
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))

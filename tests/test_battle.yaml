@@ -1,0 +1,51 @@
+---
+- config:
+  - testset: "Battle"
+  - timeout: 10
+- test:
+  - group: "Battle"
+  - name: "Check if there is no battle with id 1"
+  - url: "/battles/1"
+  - expected_status: [404]
+- test:
+  - group: "Battle"
+  - name: "Basic get"
+  - url: "/battles/"
+- test:
+  - group: "Battle"
+  - name: "Check if user 'creator' exists"
+  - url: "/users/creator"
+- test:
+  - group: "Battle"
+  - name: "Create new battle"
+  - url: "/battles/"
+  - method: "POST"
+  - body: '{"name": "Nice battle", "latitude": "13", "longitude": "37", "creator": "creator", "radius": "100", "description": "yes"}'
+  - headers: {'Content-Type': 'application/json'}
+- test:
+  - group: "Battle"
+  - name: "Get single battle"
+  - url: "/battles/1"
+- test:
+  - group: "Battle"
+  - name: "Get entries of battle with id 1"
+  - url: "/battles/1/entries"
+- test:
+  - group: "Battle"
+  - name: "Change created battle"
+  - url: "/battles/1"
+  - method: "PUT"
+  - body: '{"name": "Very nice battle"}'
+  - headers: {'Content-Type': 'application/json'}
+- test:
+  - group: "Battle"
+  - name: "Delete created battle"
+  - url: "/battles/1"
+  - method: "DELETE"
+  - headers: {'Content-Type': 'application/json'}
+- test:
+  - group: "Battle"
+  - name: "Make sure it was deleted"
+  - url: "/battles/1"
+  - expected_status: [404]
+  - headers: {'Content-Type': 'application/json'}

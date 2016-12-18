@@ -27,7 +27,7 @@
   - name: "Change created user"
   - url: "/users/ethan"
   - method: "PUT"
-  - body: '{"email="h3h3@vapenation.org"}'
+  - body: '{"email": "h3h3@vapenation.org"}'
   - headers: {'Content-Type': 'application/json'}
 - test:
   - group: "User"

@@ -1,21 +1,22 @@
-from flask import jsonify, request
+from sqlite3 import IntegrityError
+
+from flask import jsonify
 from flask_restful import Resource, abort
 
 from app import db
-from app.api.common import BattleSchema
-from app.api.common.validators import latitude_validator, longitude_validator
 from app.helpers import try_add
 from ...models import Battle, User
-from ..common import battle_schema, battles_list_schema, entries_list_schema
+from ..common import battle_schema, battles_list_schema, entries_list_schema, vote_schema
 from webargs import fields
-from webargs.flaskparser import parser, use_args, use_kwargs
+from webargs.flaskparser import use_args, use_kwargs
+from marshmallow import validate
 
 
 class BattlesListAPI(Resource):
 
     get_args = {
-        'latitude': fields.Float(validate=latitude_validator),
-        'longitude': fields.Float(validate=longitude_validator),
+        'latitude': fields.Float(validate=validate.Range(-90, 90)),
+        'longitude': fields.Float(validate=validate.Range(-180, 180)),
         'radius': fields.Float()
     }
 
@@ -36,21 +37,24 @@ class BattlesListAPI(Resource):
         return jsonify(battles_list_schema.dump(battles).data)
 
     @use_kwargs(battle_schema)
-    def post(self, latitude, longitude, name, description, creator_id):
+    def post(self, latitude, longitude, name, description, creator, radius):
         """
         Create new battle
         :return: battle JSON if the battle was created
         """
-        creator = User.get_by_id(creator_id)
+        print("Creator:", creator)
+        creator = User.query.filter_by(username=creator).first_or_404()
 
         battle = Battle(latitude=latitude,
                         longitude=longitude,
                         name=name,
                         description=description,
-                        creator=creator)
+                        creator_id=creator.id,
+                        radius=radius)
 
         if try_add(battle):
-            return jsonify(battle_schema.dump(battle).data), 201
+            print(battle_schema.dump(battle).data)
+            return jsonify(battle_schema.dump(battle).data) # return code
         else:
             abort(400, message="Couldn't create new battle")
 
@@ -63,7 +67,7 @@ class BattleAPI(Resource):
         """
         battle = Battle.get_by_id(battle_id)
         if battle is None:
-            abort(400, message="Battle could not be found.")
+            abort(404, message="Battle could not be found.")
         return jsonify(battle_schema.dump(battle).data)
 
     put_args = {
@@ -95,6 +99,22 @@ class BattleAPI(Resource):
             db.session.rollback()
             return abort(400, message="Couldn't update user.")
 
+    def delete(self, battle_id):
+        """
+        Delete battle.
+        :param battle_id:
+        :return: deleted battle if delete was successful
+        """
+        battle = Battle.query.get_or_404(battle_id)
+        battle_data = battle_schema.dump(battle).data
+        Battle.query.filter_by(id=battle_id).delete()
+        try:
+            db.session.commit()
+            return jsonify(battle_data)
+        except IntegrityError as e:
+            print(e)
+            abort(500, message="Battle exists but we couldn't delete it")
+
 
 class BattleEntries(Resource):
     def get(self, battle_id):
@@ -120,3 +140,4 @@ class BattleVoting(Resource):
             return jsonify(entries_list_schema.dump([entry1, entry2]).data)
         except TypeError:
             abort(400, message="Couldn't get voting. Probably not enough entries in the git battle")
+

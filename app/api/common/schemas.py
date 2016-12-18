@@ -1,23 +1,33 @@
 from marshmallow import Schema, fields, validate
 
-from app.api.common.validators import latitude_validator, longitude_validator, exists_in_db
+from app.api.common.validators import exists_in_db
 from app.models import Battle, Entry, User
 
 
 class BattleSchema(Schema):
     id = fields.Int(dump_only=True)
-    creator_id = fields.Int(required=True, validate=exists_in_db("User"))
+    creator = fields.Str(load_only=True, validate=exists_in_db("User"))
+    creator_id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
     description = fields.Str(missing='')
     created_on = fields.DateTime(dump_only=True)
-    latitude = fields.Float(required=True, validate=latitude_validator)
-    longitude = fields.Float(required=True, validate=longitude_validator)
+    latitude = fields.Float(required=True, validate=validate.Range(-90, 90))
+    longitude = fields.Float(required=True, validate=validate.Range(-180, 180))
     entry_count = fields.Method("get_entry_count", dump_only=True)
-    radius = fields.Float()
+    radius = fields.Float(required=True)
 
     def get_entry_count(self, obj):
         # FIXME poor performance
         return len(Battle.get_by_id(obj.id).get_entries())
+
+
+    @staticmethod
+    def factory(request):
+        only = request.args.get('fields', None)
+        if request.method == 'PUT':
+            partial = True
+
+        return UserSchema(only=only, partial=partial, context={'request': request}, exclude=exclude)
 
     class Meta:
         strict = True  # For using schemas with webargs
@@ -49,8 +59,8 @@ class UserSchema(Schema):
 
 class EntrySchema(Schema):
     id = fields.Int(dump_only=True)
-    latitude = fields.Float(required=True, validate=latitude_validator)
-    longitude = fields.Float(required=True, validate=longitude_validator)
+    latitude = fields.Float(required=True, validate=validate.Range(-90, 90))
+    longitude = fields.Float(required=True, validate=validate.Range(-180, 180))
     created_on = fields.DateTime(dump_only=True)
     image = fields.Str(dump_only=True)
     user_id = fields.Int(required=True)
@@ -65,11 +75,9 @@ class VoteSchema(Schema):
     id = fields.Int(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
     voter_id = fields.Int(required=True, validate=exists_in_db("User"))
-    entry_left_id = fields.Int(required=True, validate=exists_in_db("Entry"))
-    entry_right_id = fields.Int(required=True, validate=exists_in_db("Entry"))
-    battle_id = fields.Int(required=True, validate=exists_in_db("Battle"))
-    chosen_entry = fields.Str(required=True,
-                              validate=validate.OneOf(['left', 'right']))
+    winner_id = fields.Int(required=True, validate=exists_in_db("Entry"))
+    loser_id = fields.Int(required=True, validate=exists_in_db("Entry"))
+    battle_id = fields.Int(dump_only=True, validate=exists_in_db("Battle"))
 
     class Meta:
         strict = True

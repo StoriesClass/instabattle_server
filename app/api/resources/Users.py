@@ -24,6 +24,7 @@ class UsersListAPI(Resource):
                     password=password)
 
         if try_add(user):
+            print(user_schema.dump(user).data)
             return jsonify(user_schema.dump(user).data)
         else:
             abort(400, message="Couldn't create new user")
@@ -73,7 +74,6 @@ class UserAPI(Resource):
         :param user_id:
         :return: deleted user if delete was successful
         """
-        print(username)
         user_query = User.query.filter_by(username=username)
         user = user_query.first_or_404()
         user_query.delete()

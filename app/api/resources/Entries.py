@@ -31,7 +31,7 @@ class EntriesListAPI(Resource):
                       longitude=longitude,
                       user=user,
                       battle=battle,
-                      image=bytes(1024))
+                      image=bytes(1024)) # FIXME
 
         if try_add(entry):
             return jsonify(entry_schema.dump(entry).data)
@@ -52,5 +52,5 @@ class EntryAPI(Resource):
     def put(self, entry_id):
         """
         Update the entry
-        """
+        """ # FIXME
         entry = Entry.query.get_or_404(entry_id)

@@ -152,6 +152,7 @@ class Battle(db.Model):
         '(-90 <= latitude) AND (latitude <= 90)'), nullable=False)
     longitude = db.Column(db.Float, CheckConstraint(
         '(-180 <= longitude) AND (longitude <= 180)'), nullable=False)
+    radius = db.Column(db.Integer, nullable=False, server_default="100") # FIXME no default
 
     # FIXME doesn't work properly
     @hybrid_method

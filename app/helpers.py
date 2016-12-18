@@ -62,7 +62,6 @@ def generate_fake_vote(**kwargs):
         id2 = random.choice(battle.get_entries()).id
     return Vote(created_on=kwargs.get('created_on', forgery_py.date.datetime(past=True)),
                 voter=kwargs.get('voter') or random.choice(User.query.all()),
-                entry_left_id=kwargs.get('entry_left_id', id1),
-                entry_right_id=kwargs.get('entry_right_id', id2),
-                battle=kwargs.get('battle', battle),
-                chosen_entry=kwargs.get('chosen_entry', random.choice(['left', 'right'])))
+                winner_id=kwargs.get('entry_left_id', id1),
+                loser_id=kwargs.get('entry_right_id', id2),
+                battle=kwargs.get('battle', battle))

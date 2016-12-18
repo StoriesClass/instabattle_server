@@ -95,14 +95,14 @@ class APITestCase(unittest.TestCase):
 
         # get users
         response = self.client.get(
-            url_for('api.user', user_id=u1.id),
+            url_for('api.user', username=u1.username),
             headers=self.get_api_headers('one@me.me', '123'))
         self.assertTrue(response.status_code == 200)
         json_response = json.loads(response.data.decode('utf-8'))
-        self.assertTrue(json_response['username'] == 'one')
+        self.assertTrue(json_response['id'] == u1.id)
         response = self.client.get(
-            url_for('api.user', user_id=u2.id),
+            url_for('api.user', username=u2.username),
             headers=self.get_api_headers('two@me.me', '456'))
         self.assertTrue(response.status_code == 200)
         json_response = json.loads(response.data.decode('utf-8'))
-        self.assertTrue(json_response['username'] == 'two')
+        self.assertTrue(json_response['id'] == u2.id)

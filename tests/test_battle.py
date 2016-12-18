@@ -1,5 +1,6 @@
 import unittest
 from app import create_app, db
+from app.helpers import generate_fake_battle, generate_fake_user
 from app.models import Battle, User, Entry, Vote
 
 
@@ -22,7 +23,9 @@ class BattleModelTestCase(unittest.TestCase):
         battles = Battle.get_list()
         self.assertEquals(0, len(battles))
         size = 10
-        for b in (Battle(name="Battle" + str(i)) for i in range(size)):
+        creator = generate_fake_user()
+        db.session.add(creator)
+        for b in (generate_fake_battle(name="Battle" + str(i)) for i in range(size)):
             db.session.add(b)
         db.session.commit()
         battles = Battle.get_list()

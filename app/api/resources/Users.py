@@ -2,9 +2,10 @@ from flask_restful import Resource, abort, reqparse
 from marshmallow import validate
 from sqlalchemy.exc import IntegrityError
 from webargs import fields
-from webargs.flaskparser import use_kwargs
+from webargs.flaskparser import use_kwargs, use_args
 
 from app import db
+from app.api.common import UserSchema
 from app.helpers import try_add
 from ...models import User
 from ..common import user_schema, users_list_schema, entries_list_schema
@@ -39,24 +40,23 @@ class UsersListAPI(Resource):
 
 
 class UserAPI(Resource):
-    def get(self, user_id):
+    def get(self, username):
         """
         Get existing user
         :return: user
         """
-        user = User.get_by_id(user_id)
+        user = User.query.filter_by(username=username).first_or_404()
 
-        if user is None:
-            abort(404, message="User could not be found.")
         return jsonify(user_schema.dump(user).data)
 
-
-    @use_kwargs(user_schema)
-    def put(self, user_id, email, password, **kwargs):
+    @use_kwargs(user_schema.factory)
+    def put(self, username, email, password, **kwargs):
         """
         Update user profile
         """
-        user = User.query.get_or_404(user_id) # FIXME test
+        if not username:
+            abort(400, message="Provide username")
+        user = User.query.filter_by(username=username).first_or_404() # FIXME test
         if email:
             user.email = email
         if password:
@@ -67,10 +67,26 @@ class UserAPI(Resource):
         else:
             abort(400, message="Couldn't change user info")
 
+    def delete(self, username):
+        """
+        Delete user.
+        :param user_id:
+        :return: deleted user if delete was successful
+        """
+        print(username)
+        user_query = User.query.filter_by(username=username)
+        user = user_query.first_or_404()
+        user_query.delete()
+        try:
+            db.session.commit()
+            return jsonify(user_schema.dump(user).data)
+        except IntegrityError as e:
+            print(e)
+            abort(500, message="User exists but we couldn't delete it")
 
 
 class UserResetPassword(Resource):
-    def post(self, user_id):
+    def post(self, username):
         """
         Send to the user email to reset password
         """
@@ -78,9 +94,9 @@ class UserResetPassword(Resource):
 
 
 class UserEntries(Resource):
-    def get(self, user_id):
+    def get(self, username):
         """
         Get all battle entries of the user
         """
-        user = User.query.get_or_404(user_id)
+        user = User.query.filter_by(username=username).first_or_404()
         return jsonify(entries_list_schema.dump(user.get_entries()).data)

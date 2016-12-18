@@ -13,9 +13,9 @@ api_blueprint = Blueprint('api', __name__)
 api = Api(api_blueprint)
 
 api.add_resource(UsersListAPI, '/users/', endpoint='users_list')
-api.add_resource(UserAPI, '/users/<user_id>', endpoint='user')
-api.add_resource(UserResetPassword, '/users/<user_id>/reset_password', endpoint='user_reset_password')
-api.add_resource(UserEntries, '/users/<user_id>/entries', endpoint='user_entries')
+api.add_resource(UserAPI, '/users/<string:username>', endpoint='user')
+api.add_resource(UserResetPassword, '/users/<string:username>/reset_password', endpoint='user_reset_password')
+api.add_resource(UserEntries, '/users/<string:username>/entries', endpoint='user_entries')
 
 api.add_resource(BattlesListAPI, '/battles/', endpoint='battles_list')
 api.add_resource(BattleAPI, '/battles/<battle_id>', endpoint='battle')
@@ -60,5 +60,4 @@ def handle_request_parsing_error(err):
     """webargs error handler that uses Flask-RESTful's abort function to return
     a JSON error response to the client.
     """
-    code, msg = getattr(err, 'status_code', 400), getattr(err, 'message', 'Invalid Request')
-    abort(code, message=msg)
+    abort(422, errors=err.messages)

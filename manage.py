@@ -16,12 +16,18 @@ def make_shell_context():
     """
     Create shell context for convenient debugging
     """
+    from app.helpers import (generate_fake_user, generate_fake_battle,
+                             generate_fake_entry,generate_fake_vote)
     return dict(db=db,
                 app=app,
                 User=User,
                 Battle=Battle,
                 Vote=Vote,
-                Entry=Entry)
+                Entry=Entry,
+                fake_user=generate_fake_user,
+                fake_battle=generate_fake_battle,
+                fake_entry=generate_fake_entry,
+                fake_vote=generate_fake_vote)
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))

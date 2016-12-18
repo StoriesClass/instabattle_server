@@ -25,7 +25,7 @@ class BattleSchema(Schema):
 
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)
-    username = fields.Str(required=True, validate=validate.Length(min=3))
+    username = fields.Str(load_only=True, required=True, validate=validate.Length(min=3))
     email = fields.Email(required=True, validate=validate.Email())
     password = fields.Str(load_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -34,6 +34,17 @@ class UserSchema(Schema):
     class Meta:
         strict = True
 
+    @staticmethod
+    def factory(request):
+        # Filter based on 'fields' query parameter
+        only = request.args.get('fields', None)
+        # Respect partial updates for PUT requests and exclude username
+        if request.method == 'PUT':
+            exclude=['username']
+            partial = True
+
+        # Add current request to the schema's context
+        return UserSchema(only=only, partial=partial, context={'request': request}, exclude=exclude)
 
 
 class EntrySchema(Schema):

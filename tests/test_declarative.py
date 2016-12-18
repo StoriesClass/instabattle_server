@@ -7,13 +7,13 @@ from app.helpers import try_add, generate_fake_user
 from app.models import User
 
 
-class YAMLTestCase(unittest.TestCase):
+class DeclarativeTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
-        users = [generate_fake_user(username="creator"),
+        users = [generate_fake_user(username="creator", password="123"),
                  generate_fake_user(username="voter1"),
                  generate_fake_user(username="voter2")]
         if not try_add(*users):
@@ -26,14 +26,17 @@ class YAMLTestCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_yaml_all(self, name="all"):
+    def declarative_tester(self, name):
         # FIXME Travis CI and logging
         with self.assertRaises(SystemExit) as failures:
             resttest.main({'url': "http://localhost:8000", 'test': 'tests/test_' + name + '.yaml'})
         self.assertEqual(failures.exception.code, 0)
 
-    def test_yaml_battle(self):
-        self.test_yaml_all(name="battle")
+    def test_declarative_battle(self):
+        self.declarative_tester(name="battle")
 
-    def test_yaml_user(self):
-        self.test_yaml_all(name="user")
+    def test_declarative_user(self):
+        self.declarative_tester(name="user")
+
+    def test_declarative_auth(self):
+        self.declarative_tester(name="auth")

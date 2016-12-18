@@ -1,6 +1,7 @@
 import random
 
 from flask import current_app
+from flask.ext.restful import abort
 from sqlalchemy import CheckConstraint, Index
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin, login_manager
@@ -274,18 +275,43 @@ class User(UserMixin, db.Model):
         """
         return check_password_hash(self.password_hash, password)
 
+    # FIXME limited usage :O
     @staticmethod
-    def get_by_id(entry_id):
+    def get_or_404(user_id=None, username=None):
         """
         :param id: identifier of the wanted user.
-        :return: Entry object if there is a user with given id,
+        :return: Entry object if there is a user with given id or username,
+        404 otherwise.
+        """
+        if username:
+            user = User.query.filter_by(username=username).first_or_404()
+        elif user_id:
+            user = User.query.get_or_404(user_id)
+        else:
+            abort(404, message="Provide username or id")
+
+        return user
+
+    @staticmethod
+    def get(user_id=None, username=None):
+        """
+        :param user_id: identifier of the wanted user.
+        :param username: name of wanted user.
+        :return: User object if there is a user with given id or username,
         None otherwise.
         """
+        # FIXME
         try:
-            user = User.query.get(entry_id)
+            if username:
+                user = User.query.filter_by(username=username).first()
+            elif user_id:
+                user = User.query.get(user_id)
+            else:
+                raise NoResultFound
         except NoResultFound:
             return None
         return user
+
 
     def get_entries(self):
         return self.entries

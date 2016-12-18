@@ -22,9 +22,21 @@
   - group: "User"
   - name: "Get single user by username"
   - url: "/users/ethan"
+
 - test:
   - group: "User"
-  - name: "Change created user"
+  - name: "Get single user by id"
+  - url: "/users/1"
+- test:
+  - group: "User"
+  - name: "Change created user by id"
+  - url: "/users/1"
+  - method: "PUT"
+  - body: '{"password": "Yall"}'
+  - headers: {'Content-Type': 'application/json'}
+- test:
+  - group: "User"
+  - name: "Change created user by username"
   - url: "/users/ethan"
   - method: "PUT"
   - body: '{"email": "h3h3@vapenation.org"}'

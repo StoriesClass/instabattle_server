@@ -41,23 +41,23 @@ class UsersListAPI(Resource):
 
 
 class UserAPI(Resource):
-    def get(self, username):
+    def get(self, user_id=None, username=None):
         """
         Get existing user
-        :return: user
+        :return: User
         """
-        user = User.query.filter_by(username=username).first_or_404()
+        user = User.get_or_404(user_id, username)
 
         return jsonify(user_schema.dump(user).data)
 
     @use_kwargs(user_schema.factory)
-    def put(self, username, email, password, **kwargs):
+    def put(self, email, password, user_id=None, username=None, **kwargs):
         """
         Update user profile
+        :return: User
         """
-        if not username:
-            abort(400, message="Provide username")
-        user = User.query.filter_by(username=username).first_or_404() # FIXME test
+        user = User.get_or_404(user_id, username)
+
         if email:
             user.email = email
         if password:
@@ -68,13 +68,19 @@ class UserAPI(Resource):
         else:
             abort(400, message="Couldn't change user info")
 
-    def delete(self, username):
+    def delete(self, user_id=None, username=None):
         """
         Delete user.
         :param user_id:
         :return: deleted user if delete was successful
         """
-        user_query = User.query.filter_by(username=username)
+        if username:
+            user_query = User.query.filter_by(username=username)
+        elif user_id:
+            user_query = User.query.filter_by(id=user_id)
+        else:
+            abort(404, message="Provide username or id")
+
         user = user_query.first_or_404()
         user_query.delete()
         try:
@@ -86,17 +92,17 @@ class UserAPI(Resource):
 
 
 class UserResetPassword(Resource):
-    def post(self, username):
+    def post(self, user_id=None, username=None):
         """
         Send to the user email to reset password
         """
-        pass
+        user = User.get(user_id, username)
 
 
 class UserEntries(Resource):
-    def get(self, username):
+    def get(self, user_id=None, username=None):
         """
         Get all battle entries of the user
         """
-        user = User.query.filter_by(username=username).first_or_404()
+        user = User.get_or_404(user_id, username)
         return jsonify(entries_list_schema.dump(user.get_entries()).data)

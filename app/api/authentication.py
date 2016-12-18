@@ -8,6 +8,7 @@ auth = HTTPBasicAuth()
 @auth.verify_password
 def verify_password(email_or_token, password):
     from app.models import User, AnonymousUser
+    print(email_or_token)
     if email_or_token == '':
         g.current_user = AnonymousUser()
         return True

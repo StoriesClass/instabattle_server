@@ -18,15 +18,16 @@
   - method: "POST"
   - body: '{"username": "ethan", "email": "h3@h3.com", "password": "vapenation"}'
   - headers: {'Content-Type': 'application/json'}
+  - expected_status: [201]
 - test:
   - group: "User"
   - name: "Get single user by username"
   - url: "/users/ethan"
-
 - test:
   - group: "User"
   - name: "Get single user by id"
   - url: "/users/1"
+  - validate: {jsonpath_mini: 'username', expected: 'ethan'}
 - test:
   - group: "User"
   - name: "Change created user by id"
@@ -41,6 +42,7 @@
   - method: "PUT"
   - body: '{"email": "h3h3@vapenation.org"}'
   - headers: {'Content-Type': 'application/json'}
+  - validate: {jsonpath_mini: 'email', expected: 'h3h3@vapenation.org'}
 - test:
   - group: "User"
   - name: "Delete created user"

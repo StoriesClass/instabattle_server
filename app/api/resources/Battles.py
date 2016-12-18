@@ -53,8 +53,9 @@ class BattlesListAPI(Resource):
                         radius=radius)
 
         if try_add(battle):
-            print(battle_schema.dump(battle).data)
-            return jsonify(battle_schema.dump(battle).data) # return code
+            response = jsonify(battle_schema.dump(battle).data)
+            response.status_code = 201
+            return response
         else:
             abort(400, message="Couldn't create new battle")
 
@@ -142,12 +143,6 @@ class BattleVoting(Resource):
         except TypeError:
             abort(400, message="Couldn't get voting. Probably not enough entries in the git battle")
 
-    #@parser.location_handler('URL')
-    #@staticmethod
-    #def parse_URL(req, name, field):
-    #    print(req.path)
-
-
     @use_kwargs(vote_schema)
     def post(self, battle_id, voter_id, winner_id, loser_id):
         vote = Vote(voter_id=voter_id,
@@ -156,6 +151,8 @@ class BattleVoting(Resource):
                     battle_id=battle_id)
 
         if try_add(vote):
-            return jsonify(vote_schema.dump(vote).data)  # return code
+            response = jsonify(vote_schema.dump(vote).data)
+            response.status_code = 201
+            return response
         else:
             abort(400, message="Couldn't create new vote")

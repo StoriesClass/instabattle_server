@@ -13,7 +13,8 @@ class DeclarativeTestCase(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
-        users = [generate_fake_user(username="creator", password="123"),
+        users = [generate_fake_user(username="creator",
+                                    email="creator@instabattle.me",password="123"),
                  generate_fake_user(username="voter1"),
                  generate_fake_user(username="voter2")]
         if not try_add(*users):

@@ -34,7 +34,9 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
                       image=bytes(1024)) # FIXME
 
         if try_add(entry):
-            return jsonify(entry_schema.dump(entry).data)
+            response = jsonify(entry_schema.dump(entry).data)
+            response.status_code = 201
+            return response
         else:
             abort(400, message="Couldn't create new entry")
 

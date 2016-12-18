@@ -24,8 +24,9 @@ class UsersListAPI(Resource):
                     password=password)
 
         if try_add(user):
-            print(user_schema.dump(user).data)
-            return jsonify(user_schema.dump(user).data)
+            response = jsonify(user_schema.dump(user).data)
+            response.status_code = 201
+            return response
         else:
             abort(400, message="Couldn't create new user")
 

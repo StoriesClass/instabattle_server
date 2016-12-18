@@ -37,13 +37,13 @@ class BattlesListAPI(Resource):
         return jsonify(battles_list_schema.dump(battles).data)
 
     @use_kwargs(battle_schema)
-    def post(self, latitude, longitude, name, description, creator, radius):
+    def post(self, latitude, longitude, name, description, radius, user_id=None, username=None):
         """
         Create new battle
         :return: battle JSON if the battle was created
         """
-        print("Creator:", creator)
-        creator = User.query.filter_by(username=creator).first_or_404()
+        creator = User.get_or_404(user_id, username)
+
 
         battle = Battle(latitude=latitude,
                         longitude=longitude,

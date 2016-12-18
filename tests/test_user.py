@@ -14,6 +14,7 @@ class UserModelTestCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+        db.create_all() # FIXME ?
 
     def test_password_setter(self):
         u = User(password='123')

@@ -9,7 +9,8 @@ from app.models import Battle, Entry, User
 
 class BattleSchema(Schema):
     id = fields.Int(dump_only=True)
-    creator = fields.Str(load_only=True, validate=exists_in_db("User"))
+    username = fields.Str(load_only=True, validate=exists_in_db("User"))
+    user_id = fields.Integer(load_only=True) # FIXME validate
     creator_id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
     description = fields.Str(missing='')
@@ -69,6 +70,10 @@ class EntrySchema(Schema):
     user_id = fields.Int(required=True)
     battle_id = fields.Int(required=True)
     rating = fields.Float(required=True, dump_only=True)
+
+    @post_load
+    def set_image(self, data):
+        self.image = "{}_{}.jpg".format(data['battle_id'], data['user_id']) # FIXME temporary
 
     class Meta:
         strict = True

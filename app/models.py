@@ -3,6 +3,7 @@ import random
 from flask import current_app
 from flask.ext.restful import abort
 from sqlalchemy import CheckConstraint, Index
+from sqlalchemy import orm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin, login_manager
 from . import db
@@ -90,7 +91,7 @@ class Entry(db.Model):
     longitude = db.Column(db.Float)
     created_on = db.Column(db.DateTime, default=datetime.now,
                            onupdate=datetime.now)
-    image = db.Column(db.String, nullable=False)
+    image = db.Column(db.String) # FIXME should be nullable=False but how to set it then?
     user_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('entries'))
@@ -100,6 +101,11 @@ class Entry(db.Model):
     rating = db.Column(db.Float, default=float(Rating()), nullable=False)
 
     __table_args__ = (Index('ix_location', latitude, longitude),)
+
+    #@orm.reconstructor done in EntrySchema for now (maybe for the better)
+    #def __init__(self, data):
+    #    self.image = "{}_{}_{}.jpg".format(data['battle_id'], data['user_id'], self.id)
+
 
     def get_rating(self):
         return self.rating

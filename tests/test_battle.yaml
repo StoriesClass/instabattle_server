@@ -17,10 +17,18 @@
   - url: "/users/creator"
 - test:
   - group: "Battle"
-  - name: "Create new battle"
+  - name: "Create new battle by username"
   - url: "/battles/"
   - method: "POST"
-  - body: '{"name": "Nice battle", "latitude": "13", "longitude": "37", "creator": "creator", "radius": "100", "description": "yes"}'
+  - body: '{"name": "Nice battle", "latitude": "13", "longitude": "37", "username": "creator", "radius": "100", "description": "yes"}'
+  - headers: {'Content-Type': 'application/json'}
+  - expected_status: [201]
+- test:
+  - group: "Battle"
+  - name: "Create new battle by id"
+  - url: "/battles/"
+  - method: "POST"
+  - body: '{"name": "Yet another nice battle", "latitude": "13", "longitude": "37", "user_id": 1, "radius": "100", "description": "yes"}'
   - headers: {'Content-Type': 'application/json'}
   - expected_status: [201]
 - test:

@@ -29,8 +29,7 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
         entry = Entry(latitude=latitude,
                       longitude=longitude,
                       user=user,
-                      battle=battle,
-                      image=bytes(1024)) # FIXME
+                      battle=battle)
 
         if try_add(entry):
             response = jsonify(entry_schema.dump(entry).data)

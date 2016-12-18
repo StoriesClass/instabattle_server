@@ -38,7 +38,7 @@ class BattleSchema(Schema):
 
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)
-    username = fields.Str(load_only=True, required=True, validate=validate.Length(min=3))
+    username = fields.Str(required=True, validate=validate.Length(min=3))
     email = fields.Email(required=True, validate=validate.Email())
     password = fields.Str(load_only=True)
     created_on = fields.DateTime(dump_only=True)

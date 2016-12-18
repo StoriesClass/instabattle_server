@@ -39,6 +39,34 @@
   - headers: {'Content-Type': 'application/json'}
 - test:
   - group: "Battle"
+  - name: "Add entry 1"
+  - url: "/entries/"
+  - method: "POST"
+  - body: '{"latitude": "13", "longitude": "37", "user_id": "2", "battle_id": "1"}'
+  - headers: {'Content-Type': 'application/json'}
+- test:
+  - group: "Battle"
+  - name: "Add entry 2"
+  - url: "/entries/"
+  - method: "POST"
+  - body: '{"latitude": "13", "longitude": "37", "user_id": "3", "battle_id": "1"}'
+  - headers: {'Content-Type': 'application/json'}
+- test:
+  - group: "Battle"
+  - name: "Get voting"
+  - url: "/battles/1/voting"
+  - method: "GET"
+  - headers: {'Content-Type': 'application/json'}
+- test:
+  - group: "Battle"
+  - name: "Vote for entry 1 (vs entry 2)"
+  - url: "/battles/1/voting"
+  - method: "POST"
+  - body: '{"voter_id": 1, "winner_id": 1, "loser_id": 2}'
+  - headers: {'Content-Type': 'application/json'}
+
+- test:
+  - group: "Battle"
   - name: "Delete created battle"
   - url: "/battles/1"
   - method: "DELETE"

@@ -9,7 +9,7 @@ from ...models import Entry, User, Battle
 from ..common import entry_schema, entries_list_schema
 
 
-class EntriesListAPI(Resource):
+class EntriesListAPI(Resource): # FIXME move to battle/id/entries
     @use_kwargs({'count': fields.Int(validate=validate.Range(min=1))})
     def get(self, count):
         # FIXME not top atm

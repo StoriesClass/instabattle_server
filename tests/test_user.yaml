@@ -20,7 +20,7 @@
   - headers: {'Content-Type': 'application/json'}
 - test:
   - group: "User"
-  - name: "Get single user"
+  - name: "Get single user by username"
   - url: "/users/ethan"
 - test:
   - group: "User"

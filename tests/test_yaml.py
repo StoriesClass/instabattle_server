@@ -9,13 +9,15 @@ from app.models import User
 
 class YAMLTestCase(unittest.TestCase):
     def setUp(self):
-        print("SET UP")
         self.app = create_app('testing')
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
-        if not try_add(generate_fake_user(username="creator")):
-            self.fail("Couldn't create user 'creator'")
+        users = [generate_fake_user(username="creator"),
+                 generate_fake_user(username="voter1"),
+                 generate_fake_user(username="voter2")]
+        if not try_add(*users):
+            self.fail("Couldn't create users in SetUp")
         print(User.query.get(1))
 
 

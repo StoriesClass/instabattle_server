@@ -1,4 +1,7 @@
 from marshmallow import Schema, fields, validate
+from marshmallow import ValidationError
+from marshmallow import post_load
+from marshmallow import pre_load
 
 from app.api.common.validators import exists_in_db
 from app.models import Battle, Entry, User
@@ -74,10 +77,18 @@ class EntrySchema(Schema):
 class VoteSchema(Schema):
     id = fields.Int(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
-    voter_id = fields.Int(required=True, validate=exists_in_db("User"))
+    voter_id = fields.Int(required=True) # validate FIXME
     winner_id = fields.Int(required=True, validate=exists_in_db("Entry"))
     loser_id = fields.Int(required=True, validate=exists_in_db("Entry"))
     battle_id = fields.Int(dump_only=True, validate=exists_in_db("Battle"))
+
+    @post_load
+    def validate_entries_id(self, data):
+        battle_id_winner = Entry.query.get(data['winner_id']).battle_id
+        battle_id_loser = Entry.query.get(data['loser_id']).battle_id
+        # validate with battle_id FIXME
+        if not battle_id_winner == battle_id_loser:
+            raise ValidationError("Both entries must be in chosen battle")
 
     class Meta:
         strict = True

@@ -13,9 +13,9 @@ api_blueprint = Blueprint('api', __name__)
 api = Api(api_blueprint)
 
 api.add_resource(UsersListAPI, '/users/', endpoint='users_list')
-api.add_resource(UserAPI, '/users/<string:username>', endpoint='user')
-api.add_resource(UserResetPassword, '/users/<string:username>/reset_password', endpoint='user_reset_password')
-api.add_resource(UserEntries, '/users/<string:username>/entries', endpoint='user_entries')
+api.add_resource(UserAPI, '/users/<username>', endpoint='user')
+api.add_resource(UserResetPassword, '/users/<username>/reset_password', endpoint='user_reset_password')
+api.add_resource(UserEntries, '/users/<username>/entries', endpoint='user_entries')
 
 api.add_resource(BattlesListAPI, '/battles/', endpoint='battles_list')
 api.add_resource(BattleAPI, '/battles/<battle_id>', endpoint='battle')

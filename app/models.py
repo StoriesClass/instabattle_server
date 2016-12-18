@@ -58,27 +58,24 @@ class Vote(db.Model):
     voter_id = db.Column(db.Integer,
                          db.ForeignKey('users.id'), nullable=False)
     voter = db.relationship('User', backref=db.backref('votes'))
-    entry_left_id = db.Column(db.Integer,
+    winner_id = db.Column(db.Integer,
                               db.ForeignKey('entries.id'), nullable=False)
-    entry_right_id = db.Column(db.Integer,
+    loser_id = db.Column(db.Integer,
                                db.ForeignKey('entries.id'), nullable=False)
     battle_id = db.Column(db.Integer,
                           db.ForeignKey('battles.id'), nullable=False)
     battle = db.relationship('Battle', uselist=False)
 
-    chosen_entry = db.Column(db.Enum('left', 'right', name="side_enum",))
-
     def __init__(self, *args, **kwargs):
         super(Vote, self).__init__(*args, **kwargs)
-        entry_left = Entry.get_by_id(int(self.entry_left_id))
-        entry_right = Entry.get_by_id(int(self.entry_right_id))
-        rating_left = Rating(entry_left.get_rating())
-        rating_right = Rating(entry_right.get_rating())
-        new_rating_left, new_rating_right = rate_1vs1(rating_left, rating_right) if\
-            self.chosen_entry == 'left' else rate_1vs1(rating_right, rating_left)
-        entry_left.rating = float(new_rating_left)
-        entry_right.rating = float(new_rating_right)
-        try_add(entry_left, entry_right)
+        winner = Entry.get_by_id(self.winner_id)
+        loser = Entry.get_by_id(self.loser_id)
+        rating_winner = Rating(winner.get_rating())
+        rating_loser = Rating(loser.get_rating())
+        new_rating_winner, new_rating_loser = rate_1vs1(rating_winner, rating_loser)
+        winner.rating = float(new_rating_winner)
+        loser.rating = float(new_rating_loser)
+        try_add(winner, loser)
 
     def __repr__(self):
         return "<Vote by {} in battle {}>".format(self.voter_id, self.battle_id)

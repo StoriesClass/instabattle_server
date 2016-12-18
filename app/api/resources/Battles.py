@@ -5,10 +5,10 @@ from flask_restful import Resource, abort
 
 from app import db
 from app.helpers import try_add
-from ...models import Battle, User
+from ...models import Battle, User, Vote, Entry
 from ..common import battle_schema, battles_list_schema, entries_list_schema, vote_schema
 from webargs import fields
-from webargs.flaskparser import use_args, use_kwargs
+from webargs.flaskparser import use_args, use_kwargs, parser
 from marshmallow import validate
 
 
@@ -65,6 +65,7 @@ class BattleAPI(Resource):
         Get existing battle
         :return: battle info in JSON format
         """
+        from flask import request
         battle = Battle.get_by_id(battle_id)
         if battle is None:
             abort(404, message="Battle could not be found.")
@@ -141,3 +142,20 @@ class BattleVoting(Resource):
         except TypeError:
             abort(400, message="Couldn't get voting. Probably not enough entries in the git battle")
 
+    #@parser.location_handler('URL')
+    #@staticmethod
+    #def parse_URL(req, name, field):
+    #    print(req.path)
+
+
+    @use_kwargs(vote_schema)
+    def post(self, battle_id, voter_id, winner_id, loser_id):
+        vote = Vote(voter_id=voter_id,
+                    winner_id=winner_id,
+                    loser_id=loser_id,
+                    battle_id=battle_id)
+
+        if try_add(vote):
+            return jsonify(vote_schema.dump(vote).data)  # return code
+        else:
+            abort(400, message="Couldn't create new vote")

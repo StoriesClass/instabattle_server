@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/StoriesClass/instabattle_server.svg?branch=master)](https://travis-ci.org/StoriesClass/instabattle_server)
 
-# Building
+# Build
 
 ```
 $> pip install -r requirements.txt
@@ -21,11 +21,24 @@ postgres=# GRANT ALL PRIVILEGES ON DATABASE instabattle_test TO test;
 GRANT
 ```
 
-## Links
+# Run
+You can either use Flask's built-in server:
+
+```
+$> python manage.py runserver
+```
+or gunicorn:
+```
+$> gunicorn manage:app
+```
+
+# Links
 * Front-end: [repository][1]
 * Diagram: [Gliffy][2]
+* Live: [Heroku][3]
 
 
 [1]: https://github.com/StoriesClass/instabattle
 [2]: https://www.gliffy.com/go/publish/11338561
+[3]: https://instabattle2.herokuapp.com
 

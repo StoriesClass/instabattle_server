@@ -1,0 +1,22 @@
+---
+- config:
+  - testset: "Auth"
+  - timeout: 10
+-
+- test:
+  - group: "Auth"
+  - name: "Get token"
+  - url: "/token"
+  - method: "GET"
+  - auth_username: "creator@instabattle.me"
+  - auth_password: "123"
+  - headers: {'Content-Type': 'application/json'}
+  - extract_binds:
+    - 'token': {'jsonpath_mini': 'token'}
+#- test:
+#  - group: "Auth"
+#  - name: "Login by token"
+#  - url: "/token"
+#  - method: "GET"
+#  - auth_username: {'template': '$token'}
+#  - headers: {'Content-Type': 'application/json'}

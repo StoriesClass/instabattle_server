@@ -1,0 +1,13 @@
+language: python
+python: "3.5"
+
+# command to install dependencies
+install: "pip install -r requirements.txt"
+
+env:
+    - FLASK_CONFIG=testing
+
+# command to run tests
+script:
+  - python manage.py db upgrade
+  - python manage.py test

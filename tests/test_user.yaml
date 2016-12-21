@@ -45,6 +45,14 @@
   - validate: {jsonpath_mini: 'email', expected: 'h3h3@vapenation.org'}
 - test:
   - group: "User"
+  - name: "Create user with username starting with number (invalid)"
+  - url: "/users/"
+  - method: "POST"
+  - body: '{"username": "101", "email": "one@one.one", "password": "one"}'
+  - headers: {'Content-Type': 'application/json'}
+  - expected_status: [422]
+- test:
+  - group: "User"
   - name: "Delete created user"
   - url: "/users/ethan"
   - method: "DELETE"

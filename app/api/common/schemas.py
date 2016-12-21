@@ -14,7 +14,7 @@ class StrictSchema(Schema):
 class BattleSchema(StrictSchema):
     id = fields.Int(dump_only=True)
     username = fields.Str(load_only=True, validate=exists_in_db("User"))
-    user_id = fields.Integer(load_only=True)  # FIXME validate
+    user_id = fields.Int(load_only=True)  # FIXME validate
     creator_id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
     description = fields.Str(missing='')
@@ -26,12 +26,13 @@ class BattleSchema(StrictSchema):
 
     def get_entry_count(self, obj):
         # FIXME poor performance
-        return len(Battle.get_by_id(obj.id).get_entries())
+        return len(obj.get_entries())
 
 
 class UserSchema(StrictSchema):
     id = fields.Int(dump_only=True)
-    username = fields.Str(required=True, validate=validate.Length(min=3), )
+    username = fields.Str(required=True, validate=(validate.Length(min=3),
+                                                   lambda x: x[0].isalpha()))
     email = fields.Email(required=True, validate=validate.Email())
     password = fields.Str(load_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -44,15 +45,15 @@ class EntrySchema(StrictSchema):
     longitude = fields.Float(required=True, validate=validate.Range(-180, 180))
     created_on = fields.DateTime(dump_only=True)
     image = fields.Str(dump_only=True)
-    user_id = fields.Int(required=True)
-    battle_id = fields.Int(required=True)
+    user_id = fields.Int(required=True, validate=exists_in_db("User"))
+    battle_id = fields.Int(required=True, validate=exists_in_db("Battle"))
     rating = fields.Float(required=True, dump_only=True)
 
 
 class VoteSchema(StrictSchema):
     id = fields.Int(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
-    voter_id = fields.Int(required=True)  # validate FIXME
+    voter_id = fields.Int(required=True, validate=exists_in_db("User"))
     winner_id = fields.Int(required=True, validate=exists_in_db("Entry"))
     loser_id = fields.Int(required=True, validate=exists_in_db("Entry"))
     battle_id = fields.Int(dump_only=True, validate=exists_in_db("Battle"))

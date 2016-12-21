@@ -62,14 +62,15 @@ def deploy():
 @manager.command
 def generate_fake(user_count=7, battle_count=21, entry_count=100, vote_count=200):
     """
-    Generate fake users and battles
-    :param user_count: Number of fake users.
-    :param battle_count: Number of fake battles.
-    :return: Nothing
+    Generate fake users and battles.
+    Gets 'model_count' arguments which means create not more than 'count' objects of class 'Model'
     """
     from random import seed
     from app.helpers import (try_add, generate_fake_user, generate_fake_battle,
                              generate_fake_entry, generate_fake_vote)
+
+    user_count, battle_count, entry_count, vote_count = int(user_count), int(battle_count),\
+                                                        int(entry_count), int(vote_count)
 
     seed()
     try_add(*(generate_fake_user() for _ in range(user_count)))

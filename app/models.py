@@ -1,9 +1,8 @@
 import random
 
 from flask import current_app
-from flask.ext.restful import abort
+from flask_restful import abort
 from sqlalchemy import CheckConstraint, Index
-from sqlalchemy import orm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin, login_manager
 from . import db
@@ -91,7 +90,6 @@ class Entry(db.Model):
     longitude = db.Column(db.Float)
     created_on = db.Column(db.DateTime, default=datetime.now,
                            onupdate=datetime.now)
-    image = db.Column(db.String) # FIXME should be nullable=False but how to set it then?
     user_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('entries'))
@@ -102,9 +100,9 @@ class Entry(db.Model):
 
     __table_args__ = (Index('ix_location', latitude, longitude),)
 
-    #@orm.reconstructor done in EntrySchema for now (maybe for the better)
-    #def __init__(self, data):
-    #    self.image = "{}_{}_{}.jpg".format(data['battle_id'], data['user_id'], self.id)
+    @property
+    def image(self):
+        return '{}_{}_{}.png'.format(self.battle_id, self.user_id, self.id)
 
 
     def get_rating(self):
@@ -183,19 +181,6 @@ class Battle(db.Model):
             Battle.distance_to(latitude, longitude) < radius).all()
 
     @staticmethod
-    def get_by_id(battle_id):
-        """
-        :param battle_id: identifier of the wanted battle.
-        :return: Battle object if there is a battle with given id,
-        None otherwise.
-        """
-        try:
-            battle = Battle.query.get(battle_id)
-        except NoResultFound:
-            return None
-        return battle
-
-    @staticmethod
     def get_list(count=None):
         """
         Return all battles if count is not provided,
@@ -209,13 +194,6 @@ class Battle(db.Model):
             battles = Battle.query.limit(count).all()
         return battles
 
-    def get_votes(self):
-        """
-        Get all votes of the battle.
-        :return: List of Vote objects.
-        """
-        return self.votes
-
     def get_entries(self, count=None):
         """
         Get all entries of the battle.
@@ -223,6 +201,7 @@ class Battle(db.Model):
         """
         # FIXME perfomance
         return sorted(self.entries, key=lambda e: -e.rating)[:count if count else len(self.entries)]
+
     def get_voting(self):
         """
         Get two entries to vote using sophisticated algorithm.
@@ -270,14 +249,12 @@ class User(UserMixin, db.Model):
     def password(self, password):
         """
         Securely set password.
-        :param password:
         """
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
         """
         Check if user's password matches with given.
-        :param password:
         """
         return check_password_hash(self.password_hash, password)
 
@@ -285,7 +262,8 @@ class User(UserMixin, db.Model):
     @staticmethod
     def get_or_404(user_id=None, username=None):
         """
-        :param id: identifier of the wanted user.
+        :param user_id: identifier of the wanted user.
+        :param username: name of the wanted user.
         :return: Entry object if there is a user with given id or username,
         404 otherwise.
         """

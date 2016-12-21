@@ -44,9 +44,7 @@ class EntryAPI(Resource):
         """
         Get the entry
         """
-        entry = Entry.get_by_id(entry_id)
-        if entry is None:
-            abort(400, message="Entry could not be found.")
+        entry = Entry.query.get_or_404(entry_id)
         return jsonify(entry_schema.dump(entry).data)
 
     def put(self, entry_id):

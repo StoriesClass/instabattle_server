@@ -1,3 +1,4 @@
 - import: tests/test_user.yaml
 - import: tests/test_battle.yaml
 - import: tests/test_auth.yaml
+- import: test/test_entry.yaml

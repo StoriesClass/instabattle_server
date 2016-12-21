@@ -1,4 +1,4 @@
-from flask_restful import Resource, abort, reqparse
+from flask_restful import Resource, abort
 from marshmallow import validate
 from sqlalchemy.exc import IntegrityError
 from webargs import fields
@@ -16,8 +16,8 @@ class UsersListAPI(Resource):
     @use_kwargs(user_schema)
     def post(self, username, email, password):
         """
-        Create new user
-        :return: battle JSON if the user was created
+        Create new user.
+        :return: User or 400
         """
         user = User(username=username,
                     email=email,
@@ -32,9 +32,8 @@ class UsersListAPI(Resource):
 
     @use_kwargs({'count': fields.Int(validate=validate.Range(min=1))})
     def get(self, count):
-        # FIXME rating system?
         """
-        Get users top
+        Get users top.
         :return: list of top users
         """
         users = User.get_list(count)
@@ -51,7 +50,7 @@ class UserAPI(Resource):
 
         return jsonify(user_schema.dump(user).data)
 
-    @use_kwargs(user_schema.factory)
+    @use_kwargs(UserSchema(exclude=('username',), partial=('email',)))
     def put(self, email, password, user_id=None, username=None, **kwargs):
         """
         Update user profile
@@ -71,8 +70,7 @@ class UserAPI(Resource):
 
     def delete(self, user_id=None, username=None):
         """
-        Delete user.
-        :param user_id:
+        Delete user by id or username.
         :return: deleted user if delete was successful
         """
         if username:

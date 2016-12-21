@@ -12,7 +12,7 @@
   - name: "Basic get"
   - url: "/battles/"
 - test:
-  - group: "Battle"
+  - group: "User"
   - name: "Check if user 'creator' exists"
   - url: "/users/creator"
 - test:
@@ -25,7 +25,7 @@
   - expected_status: [201]
 - test:
   - group: "Battle"
-  - name: "Create new battle by id"
+  - name: "Create new battle by user_id"
   - url: "/battles/"
   - method: "POST"
   - body: '{"name": "Yet another nice battle", "latitude": "13", "longitude": "37", "user_id": 1, "radius": "100", "description": "yes"}'
@@ -35,7 +35,23 @@
   - group: "Battle"
   - name: "Get single battle"
   - url: "/battles/1"
-  - validate: {jsonpath_mini: 'name', expected: 'Nice battle'}
+  - validators:
+    - compare: {jsonpath_mini: 'name', expected: 'Nice battle'}
+# - test:
+#  - group: "Battle"
+#  - name: "Get all battles in zero radius"
+#  - url: "/battles/"
+#  - body: '{"latitude": 0, "longitude": 0, "radius": 0}'
+#  - validators:
+#    - compare: {raw_body: '', comparator: "length_eq", expected: 0}
+- test:
+  - group: "Battle"
+  - name: "Get all battles in extremely large radius"
+  - url: "/battles/"
+  - body: '{"latitude": 0, "longitude": 0, "radius": 1000000000}'
+  - validators:
+    - extract_test: {jmespath: "[0]", test: "exists"}
+    - extract_test: {jmespath: "[10]", test: "not_exists"}
 - test:
   - group: "Battle"
   - name: "Get entries of battle with id 1"

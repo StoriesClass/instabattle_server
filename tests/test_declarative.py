@@ -41,3 +41,6 @@ class DeclarativeTestCase(unittest.TestCase):
 
     def test_declarative_auth(self):
         self.declarative_tester(name="auth")
+
+    def test_declarative_entry(self):
+        self.declarative_tester(name="entry")

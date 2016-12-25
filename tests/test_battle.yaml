@@ -80,19 +80,26 @@
   - headers: {'Content-Type': 'application/json'}
   - expected_status: [201]
 - test:
-  - group: "Battle"
+  - group: "Vote"
   - name: "Get voting"
   - url: "/battles/1/voting"
   - method: "GET"
   - headers: {'Content-Type': 'application/json'}
 - test:
-  - group: "Battle"
+  - group: "Vote"
   - name: "Vote for entry 1 (vs entry 2)"
   - url: "/battles/1/voting"
   - method: "POST"
   - body: '{"voter_id": 1, "winner_id": 1, "loser_id": 2}'
   - headers: {'Content-Type': 'application/json'}
   - expected_status: [201]
+#- test: TODO
+#  - group: "Vote"
+#  - name: "Check if voting was successful"
+#  - url: "/entries/1"
+#  - method: "GET"
+#  - validators:
+#    - compare: {jsonpath_mini: 'rating', comparator: 'gt', expec}
 - test:
   - group: "Battle"
   - name: "Delete created battle"

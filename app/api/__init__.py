@@ -34,7 +34,10 @@ api.add_resource(TokenAPI, '/token', endpoint='get_token')
 @api_blueprint.before_request
 @auth.login_required
 def before_request():
-    pass
+    print("Before request in api_blueprint")
+    #if not g.current_user.is_anonymous and \
+    #        not g.current_user.confirmed:
+    #    return forbidden("Unconfirmed account")
 
 
 @api_blueprint.app_errorhandler(403)

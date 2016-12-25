@@ -2,9 +2,11 @@ from flask import g, jsonify
 from flask_restful import Resource
 
 from app.api.errors import unauthorized
+from ..authentication import not_anonymous_required
 
 
 class TokenAPI(Resource):
+    @not_anonymous_required
     def get(self):
         """
         Get token
@@ -14,3 +16,10 @@ class TokenAPI(Resource):
         return jsonify({'token':
                         g.current_user.generate_auth_token(expiration=3600),
                         'expiration': 3600})
+
+class SignInAPI(Resource):
+    def get(self):
+        """
+
+        :return:
+        """

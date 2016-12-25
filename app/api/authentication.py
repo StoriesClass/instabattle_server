@@ -29,4 +29,10 @@ def auth_error():
     return unauthorized("Invalid credentials")
 
 
-
+def not_anonymous_required(func):
+    def func_wrapper(*args, **kwargs):
+        if not g.current_user.is_anonymous:
+            return func(*args, **kwargs)
+        else:
+            return unauthorized("Login required for this endpoint")
+    return func_wrapper

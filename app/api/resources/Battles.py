@@ -4,6 +4,7 @@ from flask import jsonify
 from flask_restful import Resource, abort
 
 from app import db
+from app.api.authentication import not_anonymous_required
 from app.api.common import BattleSchema, UserSchema
 from app.helpers import try_add
 from ...models import Battle, User, Vote, Entry
@@ -26,6 +27,8 @@ class BattlesListAPI(Resource):
             battles = Battle.get_list()
         return jsonify(battles_list_schema.dump(battles).data)
 
+    # FIXME
+    @not_anonymous_required
     @use_kwargs(battle_schema)
     def post(self, latitude, longitude, name, description, radius, user_id=None, username=None):
         """

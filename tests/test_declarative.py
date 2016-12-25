@@ -17,6 +17,7 @@ class DeclarativeTestCase(unittest.TestCase):
                                     email="creator@instabattle.me",password="123"),
                  generate_fake_user(username="voter1"),
                  generate_fake_user(username="voter2")]
+
         if not try_add(*users):
             self.fail("Couldn't create users in SetUp")
         print(User.query.get(1))

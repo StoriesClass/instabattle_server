@@ -102,7 +102,7 @@ class Entry(db.Model):
 
     @property
     def image(self):
-        return '{}_{}_{}.png'.format(self.battle_id, self.user_id, self.id)
+        return '{}_{}_{}'.format(self.battle_id, self.user_id, self.id)
 
 
     def get_rating(self):

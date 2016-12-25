@@ -1,9 +1,13 @@
+from sqlite3 import IntegrityError
+
 from flask import jsonify, request
 from flask_restful import Resource, abort
 from marshmallow import validate
 from webargs import fields
 from webargs.flaskparser import use_kwargs
 
+from app import db
+from app.api.common import EntrySchema
 from app.helpers import try_add
 from ...models import Entry, User, Battle
 from ..common import entry_schema, entries_list_schema
@@ -37,6 +41,22 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
             return response
         else:
             abort(400, message="Couldn't create new entry")
+
+        @use_kwargs({'entry_id': fields.Int()})
+        def delete(self, entry_id):
+            """
+            Delete entry by id.
+            :return: deleted entry if delete was successful
+            """
+
+            entry = Entry.query.get_or_404(entry_id)
+            Entry.query.filter_by(id=entry_id).delete()
+            try:
+                db.session.commit()
+                return jsonify(entry_schema.dump(entry).data)
+            except IntegrityError as e:
+                print(e)
+                abort(500, message="User exists but we couldn't delete it")
 
 
 class EntryAPI(Resource):

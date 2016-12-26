@@ -32,6 +32,14 @@ or gunicorn:
 $> gunicorn manage:app
 ```
 
+# Known Bugs
+1. No proper cascading.
+2. Most routes don't require authentication.
+3. No proper logging.
+4. API is inconsistent in some places (in particular return code 500 in place of 400).
+5. All photos are public.
+6. Some input is not validated (especially in voting).
+
 # Links
 * Front-end: [repository][1]
 * Diagram: [Gliffy][2]

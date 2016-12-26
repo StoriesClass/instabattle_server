@@ -42,6 +42,7 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
         else:
             abort(400, message="Couldn't create new entry")
 
+        # FIXME
         @use_kwargs({'entry_id': fields.Int()})
         def delete(self, entry_id):
             """
@@ -56,7 +57,7 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
                 return jsonify(entry_schema.dump(entry).data)
             except IntegrityError as e:
                 print(e)
-                abort(500, message="User exists but we couldn't delete it")
+                abort(500, message="Entry exists but we couldn't delete it")
 
 
 class EntryAPI(Resource):

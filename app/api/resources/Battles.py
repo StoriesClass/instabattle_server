@@ -86,8 +86,7 @@ class BattleAPI(Resource):
         Delete battle.
         :return: deleted battle if delete was successful
         """
-        battle = Battle.query.get_or_404(battle_id)
-        battle_data = battle_schema.dump(battle).data
+        Battle.query.get_or_404(battle_id)
         Battle.query.filter_by(id=battle_id).delete()
         try:
             db.session.commit()

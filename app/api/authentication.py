@@ -1,6 +1,8 @@
 from flask import g
 from flask_httpauth import HTTPBasicAuth
-from .errors import unauthorized
+
+from app.models import Permission
+from .errors import unauthorized, forbidden
 
 auth = HTTPBasicAuth()
 
@@ -34,4 +36,12 @@ def not_anonymous_required(func):
             return func(*args, **kwargs)
         else:
             return unauthorized("Login required for this endpoint")
+    return func_wrapper
+
+def same_id_or_admin_required(func):
+    def func_wrapper(*args, **kwrags):
+        if g.current_user.id == args[0] or g.current_user.role == Permission.ADMINISTER:
+            return func(*args, **kwargs)
+        else:
+            return forbidden("Only administrators may carry out this operation on another user")
     return func_wrapper

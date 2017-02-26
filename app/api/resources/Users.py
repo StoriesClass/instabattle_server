@@ -1,16 +1,16 @@
 from flask import Response
+from flask import jsonify
 from flask_restful import Resource, abort
 from marshmallow import validate
 from sqlalchemy.exc import IntegrityError
 from webargs import fields
-from webargs.flaskparser import use_kwargs, use_args
+from webargs.flaskparser import use_kwargs
 
 from app import db
 from app.api.common import UserSchema, votes_list_schema
 from app.helpers import try_add
-from ...models import User
 from ..common import user_schema, users_list_schema, entries_list_schema
-from flask import jsonify
+from ...models import User
 
 
 class UsersListAPI(Resource):

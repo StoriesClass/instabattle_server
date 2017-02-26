@@ -145,7 +145,7 @@ class Battle(db.Model):
     creator_id = db.Column(db.Integer,
                            db.ForeignKey('users.id'),
                            index=True)
-    creator = db.relationship('User', uselist=False)
+    creator = db.relationship('User', uselist=False, backref=db.backref("battles"))
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.Text())
     created_on = db.Column(db.DateTime, default=datetime.now)
@@ -271,9 +271,19 @@ class User(UserMixin, db.Model):
                 ((Vote.winner_id == loser_id) & (Vote.loser_id == winner_id))
             )).count() != 0
 
+    @property
+    def battle_creation_limit(self):
+        DAYS_TO_NEW_BATTLE = 7
+        BATTLES_AT_START = 7
+
+        extra_battles = (datetime.now()-self.created_on).days//DAYS_TO_NEW_BATTLE
+
+        return BATTLES_AT_START - len(self.battles) + extra_battles
+
+
     # FIXME limited usage :O
     @staticmethod
-    def get_or_404(user_id=None, username=None):
+    def get_or_404(user_id=None, username=None, message=None):
         """
         :param user_id: identifier of the wanted user.
         :param username: name of the wanted user.
@@ -285,7 +295,7 @@ class User(UserMixin, db.Model):
         elif user_id:
             user = User.query.get_or_404(user_id)
         else:
-            abort(404, message="Provide username or id")
+            abort(404, message=(message or "Provide username or id"))
 
         return user
 

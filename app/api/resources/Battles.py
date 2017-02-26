@@ -43,6 +43,9 @@ class BattlesListAPI(Resource):
                         creator_id=creator.id,
                         radius=radius)
 
+        if creator.battle_creation_limit <= 0:
+            abort(400, message="You have created too many battles already")
+
         if try_add(battle):
             response = jsonify(battle_schema.dump(battle).data)
             response.status_code = 201

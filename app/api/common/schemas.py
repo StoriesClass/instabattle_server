@@ -38,6 +38,7 @@ class UserSchema(StrictSchema):
     password = fields.Str(load_only=True)
     created_on = fields.DateTime(dump_only=True)
     rating = fields.Float(dump_only=True, validate=validate.Range(0, 1000))
+    battle_creation_limit = fields.Int(dump_only=True)
 
 
 class EntrySchema(StrictSchema):

@@ -14,6 +14,8 @@
 - test:
   - group: "Battle"
   - name: "Create new battle by user_id"
+  - auth_username: "creator"
+  - auth_password: "123"
   - url: "/battles/"
   - method: "POST"
   - body: '{"name": "Yet another nice battle", "latitude": "13", "longitude": "37", "user_id": 1, "radius": "100", "description": "yes"}'
@@ -22,6 +24,8 @@
 - test:
   - group: "Entry"
   - name: "Create new entry"
+  - auth_username: "creator"
+  - auth_password: "123"
   - url: "/entries/"
   - method: "POST"
   - body: '{"latitude": 1, "longitude": 1, "user_id": 1, "battle_id": 1}'

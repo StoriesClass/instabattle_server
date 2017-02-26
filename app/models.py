@@ -202,12 +202,13 @@ class Battle(db.Model):
         # FIXME perfomance
         return sorted(self.entries, key=lambda e: -e.rating)[:count if count else len(self.entries)]
 
-    def get_voting(self):
+    def get_voting(self, user_id):
         """
         Get two entries to vote using sophisticated algorithm.
         :return: Tuple of two entries if conditions are met. Otherwise false.
         """
-        entries = self.get_entries()
+        entries = [e for e in self.get_entries() if e.user_id != user_id]
+        #print("got entries:", entries, "(user id is", user_id, ")")
 
         if len(entries) >= 2:
             entry1 = random.choice(entries)

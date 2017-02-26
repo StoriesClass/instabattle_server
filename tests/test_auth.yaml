@@ -8,7 +8,7 @@
   - name: "Get token"
   - url: "/token"
   - method: "GET"
-  - auth_username: "creator@instabattle.me"
+  - auth_username: "creator"
   - auth_password: "123"
   - headers: {'Content-Type': 'application/json'}
   - extract_binds:
@@ -16,7 +16,7 @@
 #- test:
 #  - group: "Auth"
 #  - name: "Login by token"
-#  - url: "/token"
+# - url: "/token"
 #  - method: "GET"
 #  - auth_username: {'template': '$token'}
 #  - headers: {'Content-Type': 'application/json'}

@@ -7,10 +7,9 @@ from app import db
 from app.api.authentication import not_anonymous_required
 from app.api.common import BattleSchema, UserSchema
 from app.helpers import try_add
-from ...models import Battle, User, Vote, Entry
+from ...models import Battle, User, Vote
 from ..common import battle_schema, battles_list_schema, entries_list_schema, vote_schema
-from webargs import fields
-from webargs.flaskparser import use_args, use_kwargs
+from webargs.flaskparser import use_kwargs
 
 class BattlesListAPI(Resource):
     @use_kwargs(UserSchema(only=('latitude', 'longitude', 'radius'), partial=True))
@@ -103,13 +102,14 @@ class BattleEntries(Resource):
 
 
 class BattleVoting(Resource):
-    def get(self, battle_id):
+    @use_kwargs(BattleSchema(only=("user_id",)))
+    def get(self, battle_id, user_id):
         """
         Get two entries to vote
         """
         battle = Battle.query.get_or_404(battle_id)
         try:
-            entry1, entry2 = battle.get_voting()
+            entry1, entry2 = battle.get_voting(user_id)
             return jsonify(entries_list_schema.dump([entry1, entry2]).data)
         except TypeError:
             abort(400, message="Couldn't get voting. Probably not enough entries in the battle")

@@ -9,7 +9,7 @@ from app.api.common import UserSchema
 from app.helpers import try_add
 from ...models import User
 from ..common import user_schema, users_list_schema, entries_list_schema
-from flask import jsonify, request
+from flask import jsonify
 
 
 class UsersListAPI(Resource):

@@ -16,17 +16,17 @@ api.add_resource(UsersListAPI, '/users/', endpoint='users_list')
 api.add_resource(UserAPI, '/users/<string:username>',
                  '/users/<int:user_id>', endpoint='user')
 api.add_resource(UserResetPassword, '/users/<string:username>/reset_password',
-                 '/users/<int:username>', endpoint='user_reset_password')
+                 '/users/<string:username>', endpoint='user_reset_password')
 api.add_resource(UserEntries, '/users/<string:username>/entries',
                  '/users/<int:user_id>/entries', endpoint='user_entries')
 
 api.add_resource(BattlesListAPI, '/battles/', endpoint='battles_list')
-api.add_resource(BattleAPI, '/battles/<battle_id>', endpoint='battle')
-api.add_resource(BattleEntries, '/battles/<battle_id>/entries', endpoint='battle_entries')
-api.add_resource(BattleVoting, '/battles/<battle_id>/voting', endpoint='battle_voting')
+api.add_resource(BattleAPI, '/battles/<int:battle_id>', endpoint='battle')
+api.add_resource(BattleEntries, '/battles/<int:battle_id>/entries', endpoint='battle_entries')
+api.add_resource(BattleVoting, '/battles/<int:battle_id>/voting', endpoint='battle_voting')
 
 api.add_resource(EntriesListAPI, '/entries/', endpoint='entries_list')
-api.add_resource(EntryAPI, '/entries/<entry_id>', endpoint='entry')
+api.add_resource(EntryAPI, '/entries/<int:entry_id>', endpoint='entry')
 
 api.add_resource(TokenAPI, '/token', endpoint='get_token')
 
@@ -34,7 +34,7 @@ api.add_resource(TokenAPI, '/token', endpoint='get_token')
 @api_blueprint.before_request
 @auth.login_required
 def before_request():
-    print("Before request in api_blueprint")
+    pass
     #if not g.current_user.is_anonymous and \
     #        not g.current_user.confirmed:
     #    return forbidden("Unconfirmed account")

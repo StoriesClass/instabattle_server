@@ -2,6 +2,7 @@ import random
 
 import forgery_py
 from sqlalchemy.exc import IntegrityError
+
 from . import db
 
 

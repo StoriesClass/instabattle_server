@@ -58,7 +58,7 @@ class Vote(db.Model):
                            onupdate=datetime.now)
     voter_id = db.Column(db.Integer,
                          db.ForeignKey('users.id'), nullable=False)
-    voter = db.relationship('User', backref=db.backref('votes'))
+    voter = db.relationship('User', backref=db.backref('votes', cascade="all, delete-orphan"))
     winner_id = db.Column(db.Integer,
                           db.ForeignKey('entries.id'), nullable=False)
     loser_id = db.Column(db.Integer,
@@ -71,11 +71,11 @@ class Vote(db.Model):
         super(Vote, self).__init__(*args, **kwargs)
         winner = Entry.get_by_id(self.winner_id)
         loser = Entry.get_by_id(self.loser_id)
-        rating_winner = Rating(winner.get_rating())
-        rating_loser = Rating(loser.get_rating())
+        rating_winner = winner.rating
+        rating_loser = loser.rating
         new_rating_winner, new_rating_loser = rate_1vs1(rating_winner, rating_loser)
-        winner.rating = float(new_rating_winner)
-        loser.rating = float(new_rating_loser)
+        winner.rating = new_rating_winner
+        loser.rating = new_rating_loser
         try_add(winner, loser)
 
     def __repr__(self):
@@ -92,11 +92,12 @@ class Entry(db.Model):
                            onupdate=datetime.now)
     user_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'), nullable=False)
-    user = db.relationship('User', backref=db.backref('entries'))
+    user = db.relationship('User', backref=db.backref('entries', cascade="all, delete-orphan"))
     battle_id = db.Column(db.Integer,
                           db.ForeignKey('battles.id'), nullable=False)
     battle = db.relationship('Battle', backref=db.backref('entries'))
-    rating = db.Column(db.Float, default=float(Rating()), nullable=False)
+    _rating = db.Column('rating', db.Float, default=Rating().mu, nullable=False)
+    rating_deviation = db.Column(db.Float, default=Rating().sigma, nullable=False)
 
     __table_args__ = (Index('ix_location', latitude, longitude),)
 
@@ -104,8 +105,14 @@ class Entry(db.Model):
     def image(self):
         return '{}_{}_{}'.format(self.battle_id, self.user_id, self.id)
 
-    def get_rating(self):
-        return self.rating
+    @property
+    def rating(self):
+        return Rating(self._rating, self.rating_deviation)
+
+    @rating.setter
+    def rating(self, rating):
+        self._rating = rating.mu
+        self.rating_deviation = rating.sigma
 
     @staticmethod
     def get_by_id(battle_id):
@@ -128,7 +135,7 @@ class Entry(db.Model):
         :param count: Number of entries to get.
         :return: List of Entry objects sorted by rating.
         """
-        entries = Entry.query.order_by(desc(Entry.rating))
+        entries = Entry.query.order_by(desc(Entry._rating))
         if not count:
             entries = entries.all()
         else:
@@ -199,7 +206,7 @@ class Battle(db.Model):
         :return: List of Entry objects.
         """
         # FIXME perfomance
-        return sorted(self.entries, key=lambda e: -e.rating)[:count if count else len(self.entries)]
+        return sorted(self.entries, key=lambda e: -e.rating.mu)[:count if count else len(self.entries)]
 
     def get_voting(self, user_id):
         """
@@ -207,16 +214,13 @@ class Battle(db.Model):
         :return: Tuple of two entries if conditions are met. Otherwise false.
         """
         entries = [e for e in self.get_entries() if e.user_id != user_id]
-        print("got entries:", entries, "(user id is", user_id, ")")
 
         user = User.get_or_404(user_id=user_id)
-        print("got user")
         if len(entries) >= 2:
             entry1 = random.choice(entries)
             entry2 = random.choice(entries)
-            print("User is voted:", user.is_voted(entry1.battle_id, entry1.id, entry2.id))
-            rating1 = Rating(entry1.rating)
-            rating2 = Rating(entry2.rating)
+            rating1 = entry1.rating
+            rating2 = entry2.rating
             impatience = 0
             while entry1.id == entry2.id or quality_1vs1(rating1, rating2) < 0.3 - impatience or \
                     (user.is_voted(entry1.battle_id, entry1.id, entry2.id) and impatience < 1):  # FIXME
@@ -240,11 +244,21 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, index=True, nullable=False)
     created_on = db.Column(db.DateTime, default=datetime.now)
     password_hash = db.Column(db.String(128), nullable=False)
-    rating = db.Column(db.Float, default=float(Rating()), nullable=False)
+    _rating = db.Column("rating", db.Float, default=Rating().mu, nullable=False)
+    rating_deviation = db.Column(db.Float, default=Rating().sigma, nullable=False)
 
     def __init__(self, *args, **kwargs):
         UserMixin.__init__(self)
         db.Model.__init__(self, *args, **kwargs)
+
+    @property
+    def rating(self):
+        return Rating(self._rating, self.rating_deviation)
+
+    @rating.setter
+    def rating(self, rating):
+        self._rating = rating.mu
+        self.rating_deviation = rating.sigma
 
     @property
     def password(self):
@@ -333,7 +347,7 @@ class User(UserMixin, db.Model):
         :param count: Number of battles to get.
         :return: List of User objects sorted by rating.
         """
-        users = User.query.order_by(desc(User.rating))
+        users = User.query.order_by(desc(User._rating))
         if not count:
             users = users.all()
         else:

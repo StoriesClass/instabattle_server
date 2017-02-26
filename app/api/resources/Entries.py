@@ -1,6 +1,7 @@
 from sqlite3 import IntegrityError
 
-from flask import jsonify, request
+from flask import Response
+from flask import jsonify
 from flask_restful import Resource, abort
 from marshmallow import validate
 from webargs import fields
@@ -8,8 +9,8 @@ from webargs.flaskparser import use_kwargs
 
 from app import db
 from app.helpers import try_add
-from ...models import Entry, User, Battle
 from ..common import entry_schema, entries_list_schema
+from ...models import Entry, User, Battle
 
 
 class EntriesListAPI(Resource): # FIXME move to battle/id/entries
@@ -49,11 +50,11 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
             :return: deleted entry if delete was successful
             """
 
-            entry = Entry.query.get_or_404(entry_id)
+            Entry.query.get_or_404(entry_id)
             Entry.query.filter_by(id=entry_id).delete()
             try:
                 db.session.commit()
-                return jsonify(entry_schema.dump(entry).data)
+                return Response(status=204)
             except IntegrityError as e:
                 print(e)
                 abort(500, message="Entry exists but we couldn't delete it")

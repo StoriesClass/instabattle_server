@@ -1,3 +1,4 @@
+from flask import Response
 from flask_restful import Resource, abort
 from marshmallow import validate
 from sqlalchemy.exc import IntegrityError
@@ -80,13 +81,12 @@ class UserAPI(Resource):
         else:
             abort(404, message="Provide username or id")
 
-        user = user_query.first_or_404()
+        user_query.first_or_404()
         user_query.delete()
         try:
             db.session.commit()
-            return jsonify(user_schema.dump(user).data)
+            return Response(status=204)
         except IntegrityError as e:
-            print(e)
             abort(500, message="User exists but we couldn't delete it")
 
 

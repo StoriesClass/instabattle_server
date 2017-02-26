@@ -1,5 +1,6 @@
 from sqlite3 import IntegrityError
 
+from flask import Response
 from flask import jsonify
 from flask_restful import Resource, abort
 
@@ -90,7 +91,7 @@ class BattleAPI(Resource):
         Battle.query.filter_by(id=battle_id).delete()
         try:
             db.session.commit()
-            return jsonify(battle_data)
+            return Response(status=204)
         except IntegrityError as e:
             abort(500, message="Battle exists but we couldn't delete it")
 
@@ -136,8 +137,6 @@ class BattleVoting(Resource):
         user = User.query.get_or_404(voter_id)
         if user.is_voted(battle_id, loser_id, winner_id):
             abort(400, message="User already voted for this pair")
-        else:
-            print("User didn't voted so yet")
 
         if try_add(vote):
             response = jsonify(vote_schema.dump(vote).data)

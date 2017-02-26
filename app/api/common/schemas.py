@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, validate
 from marshmallow import ValidationError
 from marshmallow import post_load
+from marshmallow import validates_schema
 
 from app.api.common.validators import exists_in_db
 from app.models import Battle, Entry, User
@@ -57,6 +58,12 @@ class VoteSchema(StrictSchema):
     winner_id = fields.Int(required=True, validate=exists_in_db("Entry"))
     loser_id = fields.Int(required=True, validate=exists_in_db("Entry"))
     battle_id = fields.Int(dump_only=True, validate=exists_in_db("Battle"))
+
+    @post_load
+    def validate_schema(self, data):
+        if data['winner_id'] == data['loser_id']:# or \
+                #User.is_voted(data['battle_id'], data['winner_id'], data['loser_id']): # FIXME
+            raise ValidationError("Can't validate VoteSchema")
 
     @post_load
     def validate_entries_id(self, data):

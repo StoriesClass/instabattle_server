@@ -88,9 +88,8 @@
 - test:
   - group: "Vote"
   - name: "Get voting"
-  - url: "/battles/1/voting"
+  - url: "/battles/1/voting?user_id=1"
   - method: "GET"
-  - body: '{"user_id": "1"}'
   - headers: {'Content-Type': 'application/json'}
 - test:
   - group: "Vote"
@@ -102,6 +101,17 @@
   - body: '{"voter_id": 1, "winner_id": 1, "loser_id": 2}'
   - headers: {'Content-Type': 'application/json'}
   - expected_status: [201]
+- test:
+  - group: "Vote"
+  - name: "Try to vote again with the same data"
+  - auth_username: "creator"
+  - auth_password: "123"
+  - url: "/battles/1/voting"
+  - method: "POST"
+  - body: '{"voter_id": 1, "winner_id": 1, "loser_id": 2}'
+  - headers: {'Content-Type': 'application/json'}
+  - expected_status: [400]
+
 #- test: TODO
 #  - group: "Vote"
 #  - name: "Check if voting was successful"

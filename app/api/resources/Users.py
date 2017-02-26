@@ -5,7 +5,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs, use_args
 
 from app import db
-from app.api.common import UserSchema
+from app.api.common import UserSchema, votes_list_schema
 from app.helpers import try_add
 from ...models import User
 from ..common import user_schema, users_list_schema, entries_list_schema
@@ -105,3 +105,9 @@ class UserEntries(Resource):
         """
         user = User.get_or_404(user_id, username)
         return jsonify(entries_list_schema.dump(user.get_entries()).data)
+
+class UserVotes(Resource):
+    def get(self, user_id=None, username=None):
+        "Get all votes of the user"
+        user = User.get_or_404(user_id, username)
+        return jsonify(votes_list_schema.dump(user.get_votes()).data)

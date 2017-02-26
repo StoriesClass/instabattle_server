@@ -55,7 +55,7 @@ class APITestCase(unittest.TestCase):
         self.assertTrue(response.status_code == 401)
 
     def test_token_auth(self):
-        u = generate_fake_user(email="test@me.me", password="123")
+        u = generate_fake_user(username="test", email="test@me.me", password="123")
         db.session.add(u)
         db.session.commit()
 
@@ -68,7 +68,7 @@ class APITestCase(unittest.TestCase):
         # get a token
         response = self.client.get(
             url_for('api.get_token'),
-            headers=self.get_api_headers('test@me.me', '123'))
+            headers=self.get_api_headers('test', '123'))
         self.assertTrue(response.status_code == 200)
         json_response = json.loads(response.data.decode('utf-8'))
         self.assertIsNotNone(json_response.get('token'))
@@ -96,13 +96,13 @@ class APITestCase(unittest.TestCase):
         # get users
         response = self.client.get(
             url_for('api.user', username=u1.username),
-            headers=self.get_api_headers('one@me.me', '123'))
+            headers=self.get_api_headers('one', '123'))
         self.assertTrue(response.status_code == 200)
         json_response = json.loads(response.data.decode('utf-8'))
         self.assertTrue(json_response['id'] == u1.id)
         response = self.client.get(
             url_for('api.user', username=u2.username),
-            headers=self.get_api_headers('two@me.me', '456'))
+            headers=self.get_api_headers('two', '456'))
         self.assertTrue(response.status_code == 200)
         json_response = json.loads(response.data.decode('utf-8'))
         self.assertTrue(json_response['id'] == u2.id)

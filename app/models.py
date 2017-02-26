@@ -60,9 +60,9 @@ class Vote(db.Model):
                          db.ForeignKey('users.id'), nullable=False)
     voter = db.relationship('User', backref=db.backref('votes'))
     winner_id = db.Column(db.Integer,
-                              db.ForeignKey('entries.id'), nullable=False)
+                          db.ForeignKey('entries.id'), nullable=False)
     loser_id = db.Column(db.Integer,
-                               db.ForeignKey('entries.id'), nullable=False)
+                         db.ForeignKey('entries.id'), nullable=False)
     battle_id = db.Column(db.Integer,
                           db.ForeignKey('battles.id'), nullable=False)
     battle = db.relationship('Battle', uselist=False)
@@ -103,7 +103,6 @@ class Entry(db.Model):
     @property
     def image(self):
         return '{}_{}_{}'.format(self.battle_id, self.user_id, self.id)
-
 
     def get_rating(self):
         return self.rating
@@ -154,7 +153,7 @@ class Battle(db.Model):
         '(-90 <= latitude) AND (latitude <= 90)'), nullable=False)
     longitude = db.Column(db.Float, CheckConstraint(
         '(-180 <= longitude) AND (longitude <= 180)'), nullable=False)
-    radius = db.Column(db.Integer, nullable=False, server_default="100") # FIXME no default
+    radius = db.Column(db.Integer, nullable=False, server_default="100")  # FIXME no default
 
     # FIXME doesn't work properly
     @hybrid_method
@@ -208,19 +207,24 @@ class Battle(db.Model):
         :return: Tuple of two entries if conditions are met. Otherwise false.
         """
         entries = [e for e in self.get_entries() if e.user_id != user_id]
-        #print("got entries:", entries, "(user id is", user_id, ")")
+        print("got entries:", entries, "(user id is", user_id, ")")
 
+        user = User.get_or_404(user_id=user_id)
+        print("got user")
         if len(entries) >= 2:
             entry1 = random.choice(entries)
             entry2 = random.choice(entries)
+            print("User is voted:", user.is_voted(entry1.battle_id, entry1.id, entry2.id))
             rating1 = Rating(entry1.rating)
             rating2 = Rating(entry2.rating)
             impatience = 0
-            while entry1 == entry2 or quality_1vs1(rating1, rating2) < 0.3 - impatience:
+            while entry1.id == entry2.id or quality_1vs1(rating1, rating2) < 0.3 - impatience or \
+                    (user.is_voted(entry1.battle_id, entry1.id, entry2.id) and impatience < 1):  # FIXME
                 entry1 = random.choice(entries)
                 entry2 = random.choice(entries)
                 impatience += 0.01
-            return entry1, entry2
+            if not user.is_voted(entry1.battle_id, entry1.id, entry2.id):
+                return entry1, entry2
         return None
 
     def __repr__(self):
@@ -258,6 +262,14 @@ class User(UserMixin, db.Model):
         Check if user's password matches with given.
         """
         return check_password_hash(self.password_hash, password)
+
+    def is_voted(self, battle_id, winner_id, loser_id):
+        return Vote.query.filter(
+            (Vote.voter_id == self.id) &
+            (Vote.battle_id == battle_id) & (
+                ((Vote.winner_id == winner_id) & (Vote.loser_id == loser_id)) |
+                ((Vote.winner_id == loser_id) & (Vote.loser_id == winner_id))
+            )).count() != 0
 
     # FIXME limited usage :O
     @staticmethod
@@ -297,9 +309,11 @@ class User(UserMixin, db.Model):
             return None
         return user
 
-
     def get_entries(self):
         return self.entries
+
+    def get_votes(self):
+        return self.votes
 
     @staticmethod
     def get_list(count=None):
@@ -310,7 +324,7 @@ class User(UserMixin, db.Model):
         :return: List of User objects sorted by rating.
         """
         users = User.query.order_by(desc(User.rating))
-        if not count :
+        if not count:
             users = users.all()
         else:
             users = users.limit(count).all()
@@ -335,5 +349,6 @@ class User(UserMixin, db.Model):
 
 class AnonymousUser(AnonymousUserMixin):
     pass
+
 
 login_manager.anonymous_user = AnonymousUser

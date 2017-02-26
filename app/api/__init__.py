@@ -5,7 +5,7 @@ from webargs.flaskparser import parser
 from .resources.Auth import TokenAPI
 from .resources.Battles import BattlesListAPI, BattleAPI, BattleEntries, BattleVoting
 from .resources.Entries import EntriesListAPI, EntryAPI
-from .resources.Users import UsersListAPI, UserAPI, UserResetPassword, UserEntries
+from .resources.Users import UsersListAPI, UserAPI, UserResetPassword, UserEntries, UserVotes
 from .authentication import auth
 
 api_blueprint = Blueprint('api', __name__)
@@ -19,6 +19,8 @@ api.add_resource(UserResetPassword, '/users/<string:username>/reset_password',
                  '/users/<string:username>', endpoint='user_reset_password')
 api.add_resource(UserEntries, '/users/<string:username>/entries',
                  '/users/<int:user_id>/entries', endpoint='user_entries')
+api.add_resource(UserVotes, '/users/<int:user_id>/votes',
+                 '/users/<string:username>/votes', endpoint='user_votes')
 
 api.add_resource(BattlesListAPI, '/battles/', endpoint='battles_list')
 api.add_resource(BattleAPI, '/battles/<int:battle_id>', endpoint='battle')

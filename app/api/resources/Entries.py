@@ -7,7 +7,6 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 
 from app import db
-from app.api.common import EntrySchema
 from app.helpers import try_add
 from ...models import Entry, User, Battle
 from ..common import entry_schema, entries_list_schema

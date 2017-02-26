@@ -108,21 +108,33 @@ class BattleVoting(Resource):
         Get two entries to vote
         """
         battle = Battle.query.get_or_404(battle_id)
+
         try:
             entry1, entry2 = battle.get_voting(user_id)
+        except TypeError:
+            abort(400, message="Couldn't get voting")
+
+        try:
             return jsonify(entries_list_schema.dump([entry1, entry2]).data)
         except TypeError:
-            abort(400, message="Couldn't get voting. Probably not enough entries in the battle")
+            abort(500, message="Couldn't get dump voting")
 
     @use_kwargs(vote_schema)
     def post(self, battle_id, voter_id, winner_id, loser_id):
         """
         Create new entry
         """
+
         vote = Vote(voter_id=voter_id,
                     winner_id=winner_id,
                     loser_id=loser_id,
                     battle_id=battle_id)
+
+        user = User.query.get_or_404(voter_id)
+        if user.is_voted(battle_id, loser_id, winner_id):
+            abort(400, message="User already voted for this pair")
+        else:
+            print("User didn't voted so yet")
 
         if try_add(vote):
             response = jsonify(vote_schema.dump(vote).data)

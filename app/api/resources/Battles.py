@@ -3,6 +3,9 @@ from flask import Response
 from flask import g
 from flask import jsonify
 from flask_restful import Resource, abort
+from marshmallow.validate import Range
+from webargs import fields
+
 from app import db
 from app.api.authentication import not_anonymous_required
 from app.api.common import BattleSchema, UserSchema
@@ -100,6 +103,7 @@ class BattleAPI(Resource):
 
 
 class BattleEntries(Resource):
+    @use_kwargs({'count': fields.Int(validate=Range(min=1))})
     def get(self, battle_id, count=None):
         """
         Get all entries of the battle

@@ -164,22 +164,13 @@ class Battle(db.Model):
     @hybrid_method
     def distance_to(self, latitude, longitude):
         from haversine import haversine
-        return haversine((latitude, longitude), (self.latitude, self.longitude))
-
-    # @distance_to.expression
-    # def distance_to(cls, latitude, longitude):
-    #    return (func.abs(cls.latitude - latitude) / 90 +
-    #            func.abs(cls.longitude - longitude) / 180) / 2
+        return haversine((latitude, longitude), (self.latitude, self.longitude))*1000
 
     @staticmethod
     def get_in_radius(latitude, longitude, radius):
         """
-        Radius is metaphorical for now.
-        :param latitude:
-        :param longitude:
-        :param radius: a value from 0 to 1 where 1 means whole map
-        :return: Battles close to point with coordinates (latitude, longitude)
-        according to some "magic" metric.
+        :param radius: in meters
+        :return: List of battles in given radius from (latitude, longitude)
         """
         return db.session.query(Battle).filter(
             Battle.distance_to(latitude, longitude) < radius).all()

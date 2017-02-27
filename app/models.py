@@ -94,7 +94,7 @@ class Entry(db.Model):
     user = db.relationship('User', backref=db.backref('entries', cascade="all, delete-orphan"))
     battle_id = db.Column(db.Integer,
                           db.ForeignKey('battles.id'), nullable=False)
-    battle = db.relationship('Battle', backref=db.backref('entries'))
+    battle = db.relationship('Battle', backref=db.backref('entries', cascade="all, delete-orphan"))
     _rating = db.Column('rating', db.Float, default=Rating().mu, nullable=False)
     rating_deviation = db.Column(db.Float, default=Rating().sigma, nullable=False)
 
@@ -228,7 +228,7 @@ class Battle(db.Model):
                 entry1 = random.choice(entries)
                 entry2 = random.choice(entries)
                 impatience += 0.01
-            if not user.is_voted(entry1.battle_id, entry1.id, entry2.id):
+            if not user.is_voted(entry1.battle_id, entry1.id, entry2.id) and not entry1.id == entry2.id:
                 return entry1, entry2
         return None
 

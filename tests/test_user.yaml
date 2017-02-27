@@ -23,26 +23,42 @@
   - group: "User"
   - name: "Get single user by username"
   - url: "/users/ethan"
+  - validators:
+    - compare: {jsonpath_mini: 'email', expected: 'h3@h3.com'}
+  - expected_status: [200]
 - test:
   - group: "User"
   - name: "Get single user by id"
   - url: "/users/1"
-  - validate: {jsonpath_mini: 'username', expected: 'ethan'}
+  - validators:
+    - compare: {jsonpath_mini: 'username', expected: 'creator'}
+  - expected_status: [200]
 - test:
   - group: "User"
-  - name: "Change created user by id"
-  - url: "/users/1"
+  - name: "Change created user's password by id"
+  - auth_username: "ethan"
+  - auth_password: "vapenation"
+  - url: "/users/4"
   - method: "PUT"
   - body: '{"password": "Yall"}'
   - headers: {'Content-Type': 'application/json'}
 - test:
   - group: "User"
+  - name: "Get single user by id after updating"
+  - url: "/users/4"
+  - validators:
+    - compare: {jsonpath_mini: 'username', expected: 'ethan'}
+- test:
+  - group: "User"
   - name: "Change created user by username"
+  - auth_username: "ethan"
+  - auth_password: "Yall"
   - url: "/users/ethan"
   - method: "PUT"
   - body: '{"email": "h3h3@vapenation.org"}'
   - headers: {'Content-Type': 'application/json'}
-  - validate: {jsonpath_mini: 'email', expected: 'h3h3@vapenation.org'}
+  - validators:
+    - compare: {jsonpath_mini: 'email', expected: 'h3h3@vapenation.org'}
 - test:
   - group: "User"
   - name: "Create user with username starting with number (invalid)"
@@ -54,9 +70,12 @@
 - test:
   - group: "User"
   - name: "Delete created user"
+  - auth_username: "ethan"
+  - auth_password: "Yall"
   - url: "/users/ethan"
   - method: "DELETE"
   - headers: {'Content-Type': 'application/json'}
+  - expected_status: [204]
 - test:
   - group: "User"
   - name: "Make sure it was deleted"

@@ -38,8 +38,8 @@ def not_anonymous_required(func):
             return unauthorized("Login required for this endpoint")
     return func_wrapper
 
-def same_id_or_admin_required(func):
-    def func_wrapper(*args, **kwrags):
+def id_or_admin_required(func):
+    def func_wrapper(*args, **kwargs):
         if g.current_user.id == args[0] or g.current_user.role == Permission.ADMINISTER:
             return func(*args, **kwargs)
         else:

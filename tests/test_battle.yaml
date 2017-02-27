@@ -63,6 +63,8 @@
 - test:
   - group: "Battle"
   - name: "Change created battle"
+  - auth_username: "creator"
+  - auth_password: "123"
   - url: "/battles/1"
   - method: "PUT"
   - body: '{"name": "Very nice battle"}'
@@ -80,6 +82,8 @@
 - test:
   - group: "Battle"
   - name: "Add entry 2"
+  - auth_username: "creator"
+  - auth_password: "123"
   - url: "/entries/"
   - method: "POST"
   - body: '{"latitude": "13", "longitude": "37", "user_id": "3", "battle_id": "1"}'
@@ -120,11 +124,31 @@
 #  - validators:
 #    - compare: {jsonpath_mini: 'rating', comparator: 'gt', expec}
 - test:
+  - group: "User"
+  - name: "Create another user"
+  - url: "/users/"
+  - method: "POST"
+  - body: '{"username": "deleter", "email": "de@le.te", "password": "lol"}'
+  - headers: {'Content-Type': 'application/json'}
+  - expected_status: [201]
+- test:
   - group: "Battle"
-  - name: "Delete created battle"
+  - name: "Try to delete a battle created by someone else"
+  - auth_username: "deleter"
+  - auth_password: "lol"
   - url: "/battles/1"
   - method: "DELETE"
   - headers: {'Content-Type': 'application/json'}
+  - expected_status: [403]
+- test:
+  - group: "Battle"
+  - name: "Delete created battle"
+  - auth_username: "creator"
+  - auth_password: "123"
+  - url: "/battles/1"
+  - method: "DELETE"
+  - headers: {'Content-Type': 'application/json'}
+  - expected_status: [204]
 - test:
   - group: "Battle"
   - name: "Make sure it was deleted"

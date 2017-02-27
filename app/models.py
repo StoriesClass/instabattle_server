@@ -165,13 +165,13 @@ class Battle(db.Model):
     # FIXME doesn't work properly
     @hybrid_method
     def distance_to(self, latitude, longitude):
-        return (abs(self.latitude - latitude) / 90 +
-                abs(self.longitude - longitude) / 180) / 2
+        from haversine import haversine
+        return haversine((latitude, longitude), (self.latitude, self.longitude))
 
-    @distance_to.expression
-    def distance_to(cls, latitude, longitude):
-        return (func.abs(cls.latitude - latitude) / 90 +
-                func.abs(cls.longitude - longitude) / 180) / 2
+    #@distance_to.expression
+    #def distance_to(cls, latitude, longitude):
+    #    return (func.abs(cls.latitude - latitude) / 90 +
+    #            func.abs(cls.longitude - longitude) / 180) / 2
 
     @staticmethod
     def get_in_radius(latitude, longitude, radius):

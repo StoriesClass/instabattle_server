@@ -1,14 +1,16 @@
 from sqlite3 import IntegrityError
 
 from flask import Response
+from flask import g
 from flask import jsonify
 from flask_restful import Resource, abort
 
 from app import db
 from app.api.authentication import not_anonymous_required
 from app.api.common import BattleSchema, UserSchema
+from app.api.errors import forbidden
 from app.helpers import try_add
-from ...models import Battle, User, Vote
+from ...models import Battle, User, Vote, Permission
 from ..common import battle_schema, battles_list_schema, entries_list_schema, vote_schema
 from webargs.flaskparser import use_kwargs
 
@@ -63,6 +65,7 @@ class BattleAPI(Resource):
         battle = Battle.query.get_or_404(battle_id)
         return jsonify(battle_schema.dump(battle).data)
 
+    @not_anonymous_required
     @use_kwargs(BattleSchema(only=('name', 'description')))
     def put(self, battle_id, name, description):
         """
@@ -81,12 +84,18 @@ class BattleAPI(Resource):
         else:
             return abort(400, message="Couldn't update user.")
 
+    @not_anonymous_required
     def delete(self, battle_id):
         """
-        Delete battle.
-        :return: deleted battle if delete was successful
+        Delete battle
+        :return: 204 on success, otherwise 500
         """
-        Battle.query.get_or_404(battle_id)
+
+        battle = Battle.query.get_or_404(battle_id)
+
+        if battle.creator != g.current_user and g.current_user.role != Permission.ADMINISTER:
+            return forbidden("Only creator of the battle or administer may delete it")
+
         Battle.query.filter_by(id=battle_id).delete()
         try:
             db.session.commit()
@@ -122,6 +131,7 @@ class BattleVoting(Resource):
         except TypeError:
             abort(500, message="Couldn't get dump voting")
 
+    @not_anonymous_required
     @use_kwargs(vote_schema)
     def post(self, battle_id, voter_id, winner_id, loser_id):
         """

@@ -8,6 +8,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 
 from app import db
+from app.api.authentication import not_anonymous_required
 from app.helpers import try_add
 from ..common import entry_schema, entries_list_schema
 from ...models import Entry, User, Battle
@@ -23,6 +24,7 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
         entries = Entry.get_list(count)
         return jsonify(entries_list_schema.dump(entries).data)
 
+    @not_anonymous_required
     @use_kwargs(entry_schema)
     def post(self, latitude, longitude, user_id, battle_id):
         """
@@ -43,6 +45,7 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
             abort(400, message="Couldn't create new entry")
 
         # FIXME
+        @not_anonymous_required
         @use_kwargs({'entry_id': fields.Int()})
         def delete(self, entry_id):
             """
@@ -68,6 +71,7 @@ class EntryAPI(Resource):
         entry = Entry.query.get_or_404(entry_id)
         return jsonify(entry_schema.dump(entry).data)
 
+    @not_anonymous_required
     def put(self, entry_id):
         """
         Update the entry

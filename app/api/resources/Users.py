@@ -7,6 +7,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 
 from app import db
+from app.api.authentication import not_anonymous_required
 from app.api.common import UserSchema, votes_list_schema
 from app.helpers import try_add
 from ..common import user_schema, users_list_schema, entries_list_schema
@@ -51,13 +52,19 @@ class UserAPI(Resource):
 
         return jsonify(user_schema.dump(user).data)
 
+    @not_anonymous_required
     @use_kwargs(UserSchema(exclude=('username',), partial=('email',)))
     def put(self, email, password, user_id=None, username=None, **kwargs):
         """
         Update user profile
         :return: User
         """
+
+        print("Got id", user_id, "username", username)
+
         user = User.get_or_404(user_id, username)
+
+        print("Gonna change password or email of", user)
 
         if email:
             user.email = email
@@ -69,6 +76,7 @@ class UserAPI(Resource):
         else:
             abort(400, message="Couldn't change user info")
 
+    @not_anonymous_required
     def delete(self, user_id=None, username=None):
         """
         Delete user by id or username.
@@ -91,6 +99,7 @@ class UserAPI(Resource):
 
 
 class UserResetPassword(Resource):
+    @not_anonymous_required
     def post(self, user_id=None, username=None):
         """
         Send to the user email to reset password

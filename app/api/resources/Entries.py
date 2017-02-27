@@ -1,12 +1,10 @@
 from sqlite3 import IntegrityError
-
 from flask import Response
 from flask import jsonify
 from flask_restful import Resource, abort
 from marshmallow import validate
 from webargs import fields
 from webargs.flaskparser import use_kwargs
-
 from app import db
 from app.api.authentication import not_anonymous_required
 from app.helpers import try_add

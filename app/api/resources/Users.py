@@ -5,7 +5,6 @@ from marshmallow import validate
 from sqlalchemy.exc import IntegrityError
 from webargs import fields
 from webargs.flaskparser import use_kwargs
-
 from app import db
 from app.api.authentication import not_anonymous_required
 from app.api.common import UserSchema, votes_list_schema
@@ -59,12 +58,7 @@ class UserAPI(Resource):
         Update user profile
         :return: User
         """
-
-        print("Got id", user_id, "username", username)
-
         user = User.get_or_404(user_id, username)
-
-        print("Gonna change password or email of", user)
 
         if email:
             user.email = email
@@ -79,7 +73,7 @@ class UserAPI(Resource):
     @not_anonymous_required
     def delete(self, user_id=None, username=None):
         """
-        Delete user by id or username.
+        Delete user
         :return: deleted user if delete was successful
         """
         if username:
@@ -94,7 +88,7 @@ class UserAPI(Resource):
         try:
             db.session.commit()
             return Response(status=204)
-        except IntegrityError as e:
+        except IntegrityError:
             abort(500, message="User exists but we couldn't delete it")
 
 
@@ -102,10 +96,9 @@ class UserResetPassword(Resource):
     @not_anonymous_required
     def post(self, user_id=None, username=None):
         """
-        Send to the user email to reset password
+        Send to email to the user with reset password instructions
         """
-        user = User.get(user_id, username)
-
+        user = User.get_or_404(user_id, username)
 
 class UserEntries(Resource):
     def get(self, user_id=None, username=None):
@@ -113,10 +106,12 @@ class UserEntries(Resource):
         Get all battle entries of the user
         """
         user = User.get_or_404(user_id, username)
-        return jsonify(entries_list_schema.dump(user.get_entries()).data)
+        return jsonify(entries_list_schema.dump(user.entries).data)
 
 class UserVotes(Resource):
     def get(self, user_id=None, username=None):
-        "Get all votes of the user"
+        """
+        Get all votes of the user
+        """
         user = User.get_or_404(user_id, username)
-        return jsonify(votes_list_schema.dump(user.get_votes()).data)
+        return jsonify(votes_list_schema.dump(user.votes).data)

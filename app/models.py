@@ -1,5 +1,4 @@
 import random
-
 from flask import current_app
 from flask_restful import abort
 from sqlalchemy import CheckConstraint, Index
@@ -8,7 +7,7 @@ from flask_login import UserMixin, AnonymousUserMixin, login_manager
 from . import db
 from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import desc, func
+from sqlalchemy import desc
 from sqlalchemy.ext.hybrid import hybrid_method
 from trueskill import Rating, rate_1vs1, quality_1vs1
 from .helpers import try_add
@@ -162,14 +161,13 @@ class Battle(db.Model):
         '(-180 <= longitude) AND (longitude <= 180)'), nullable=False)
     radius = db.Column(db.Integer, nullable=False, server_default="100")  # FIXME no default
 
-    # FIXME doesn't work properly
     @hybrid_method
     def distance_to(self, latitude, longitude):
         from haversine import haversine
         return haversine((latitude, longitude), (self.latitude, self.longitude))
 
-    #@distance_to.expression
-    #def distance_to(cls, latitude, longitude):
+    # @distance_to.expression
+    # def distance_to(cls, latitude, longitude):
     #    return (func.abs(cls.latitude - latitude) / 90 +
     #            func.abs(cls.longitude - longitude) / 180) / 2
 
@@ -205,8 +203,11 @@ class Battle(db.Model):
         Get all entries of the battle.
         :return: List of Entry objects.
         """
-        # FIXME perfomance
-        return sorted(self.entries, key=lambda e: -e.rating.mu)[:count if count else len(self.entries)]
+        query = Entry.query.filter_by(battle_id=self.id).order_by(desc(Entry._rating))
+        if count:
+            return query.limit(count).all()
+        else:
+            return query.all()
 
     def get_voting(self, user_id):
         """
@@ -290,12 +291,10 @@ class User(UserMixin, db.Model):
         DAYS_TO_NEW_BATTLE = 7
         BATTLES_AT_START = 7
 
-        extra_battles = (datetime.now()-self.created_on).days//DAYS_TO_NEW_BATTLE
+        extra_battles = (datetime.now() - self.created_on).days // DAYS_TO_NEW_BATTLE
 
         return BATTLES_AT_START - len(self.battles) + extra_battles
 
-
-    # FIXME limited usage :O
     @staticmethod
     def get_or_404(user_id=None, username=None, message=None):
         """
@@ -305,13 +304,11 @@ class User(UserMixin, db.Model):
         404 otherwise.
         """
         if username:
-            user = User.query.filter_by(username=username).first_or_404()
+            return User.query.filter_by(username=username).first_or_404()
         elif user_id:
-            user = User.query.get_or_404(user_id)
+            return User.query.get_or_404(user_id)
         else:
             abort(404, message=(message or "Provide username or id"))
-
-        return user
 
     @staticmethod
     def get(user_id=None, username=None):
@@ -321,23 +318,11 @@ class User(UserMixin, db.Model):
         :return: User object if there is a user with given id or username,
         None otherwise.
         """
-        # FIXME
-        try:
-            if username:
-                user = User.query.filter_by(username=username).first()
-            elif user_id:
-                user = User.query.get(user_id)
-            else:
-                raise NoResultFound
-        except NoResultFound:
-            return None
-        return user
-
-    def get_entries(self):
-        return self.entries
-
-    def get_votes(self):
-        return self.votes
+        if username:
+            return User.query.filter_by(username=username).first()
+        elif user_id:
+            return User.query.get(user_id)
+        return None
 
     @staticmethod
     def get_list(count=None):
@@ -349,10 +334,9 @@ class User(UserMixin, db.Model):
         """
         users = User.query.order_by(desc(User._rating))
         if not count:
-            users = users.all()
+            return users.all()
         else:
-            users = users.limit(count).all()
-        return users
+            return users.limit(count).all()
 
     def generate_auth_token(self, expiration):
         s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)

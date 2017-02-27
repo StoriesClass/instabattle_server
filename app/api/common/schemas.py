@@ -15,7 +15,7 @@ class StrictSchema(Schema):
 class BattleSchema(StrictSchema):
     id = fields.Int(dump_only=True)
     username = fields.Str(load_only=True, validate=exists_in_db("User"))
-    user_id = fields.Int(load_only=True)  # FIXME validate
+    user_id = fields.Int(load_only=True, validate=exists_in_db("User"))
     creator_id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
     description = fields.Str(missing='')
@@ -25,9 +25,9 @@ class BattleSchema(StrictSchema):
     entry_count = fields.Method("get_entry_count", dump_only=True)
     radius = fields.Float(required=True)
 
-    def get_entry_count(self, obj):
-        # FIXME poor performance
-        return len(obj.get_entries())
+    def get_entry_count(self, battle):
+        # FIXME poor performance (?)
+        return len(battle.entries)
 
 
 class UserSchema(StrictSchema):

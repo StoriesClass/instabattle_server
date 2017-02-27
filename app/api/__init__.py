@@ -42,9 +42,16 @@ def before_request():
     #    return forbidden("Unconfirmed account")
 
 
+@api_blueprint.app_errorhandler(401)
+def unauthorized(e):
+    response = jsonify({'error': 'unauthorized'})
+    response.status_code = 401
+    return response
+
+
 @api_blueprint.app_errorhandler(403)
-def forbidden(message=None):
-    response = jsonify({'error': 'forbidden', 'message': message})
+def forbidden(e):
+    response = jsonify({'error': 'forbidden'})
     response.status_code = 403
     return response
 

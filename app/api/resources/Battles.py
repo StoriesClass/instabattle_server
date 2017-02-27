@@ -1,14 +1,11 @@
 from sqlite3 import IntegrityError
-
 from flask import Response
 from flask import g
 from flask import jsonify
 from flask_restful import Resource, abort
-
 from app import db
 from app.api.authentication import not_anonymous_required
 from app.api.common import BattleSchema, UserSchema
-from app.api.errors import forbidden
 from app.helpers import try_add
 from ...models import Battle, User, Vote, Permission
 from ..common import battle_schema, battles_list_schema, entries_list_schema, vote_schema
@@ -24,12 +21,11 @@ class BattlesListAPI(Resource):
         if latitude and longitude and radius:
             battles = Battle.get_in_radius(latitude, longitude, radius)
         elif latitude or longitude or radius:
-            abort(400, message="Wrong arguments. Maybe typo?")
+            abort(400, message="Wrong arguments. Maybe a typo?")
         else:
             battles = Battle.get_list()
         return jsonify(battles_list_schema.dump(battles).data)
 
-    # FIXME
     @not_anonymous_required
     @use_kwargs(battle_schema)
     def post(self, latitude, longitude, name, description, radius, user_id=None, username=None):
@@ -69,7 +65,7 @@ class BattleAPI(Resource):
     @use_kwargs(BattleSchema(only=('name', 'description')))
     def put(self, battle_id, name, description):
         """
-        Update battle's.
+        Update battle info
         :return: updated battle
         """
         battle = Battle.query.get_or_404(battle_id)
@@ -90,11 +86,10 @@ class BattleAPI(Resource):
         Delete battle
         :return: 204 on success, otherwise 500
         """
-
         battle = Battle.query.get_or_404(battle_id)
 
         if battle.creator != g.current_user and g.current_user.role != Permission.ADMINISTER:
-            return forbidden("Only creator of the battle or administer may delete it")
+            return abort(403, message="Only creator of the battle or administer may delete it")
 
         Battle.query.filter_by(id=battle_id).delete()
         try:
@@ -137,7 +132,6 @@ class BattleVoting(Resource):
         """
         Create new entry
         """
-
         vote = Vote(voter_id=voter_id,
                     winner_id=winner_id,
                     loser_id=loser_id,
@@ -145,7 +139,7 @@ class BattleVoting(Resource):
 
         user = User.query.get_or_404(voter_id)
         if user.is_voted(battle_id, loser_id, winner_id):
-            abort(400, message="User already voted for this pair")
+            abort(400, message="User had already voted on this pair")
 
         if try_add(vote):
             response = jsonify(vote_schema.dump(vote).data)

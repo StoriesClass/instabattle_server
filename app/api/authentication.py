@@ -1,11 +1,9 @@
+from flask import abort
 from flask import g
 from flask_httpauth import HTTPBasicAuth
-
 from app.models import Permission
-from .errors import unauthorized, forbidden
 
 auth = HTTPBasicAuth()
-
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -25,17 +23,12 @@ def verify_password(username_or_token, password):
     return user.verify_password(password)
 
 
-@auth.error_handler
-def auth_error():
-    return unauthorized("Invalid credentials")
-
-
 def not_anonymous_required(func):
     def func_wrapper(*args, **kwargs):
         if not g.current_user.is_anonymous:
             return func(*args, **kwargs)
         else:
-            return unauthorized("Login required for this endpoint")
+            abort(401, message="Login required for this endpoint")
     return func_wrapper
 
 def id_or_admin_required(func):
@@ -43,5 +36,5 @@ def id_or_admin_required(func):
         if g.current_user.id == args[0] or g.current_user.role == Permission.ADMINISTER:
             return func(*args, **kwargs)
         else:
-            return forbidden("Only administrators may carry out this operation on another user")
+            abort(403, message="Only administrators may carry out this operation on another user")
     return func_wrapper

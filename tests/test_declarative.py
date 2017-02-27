@@ -15,8 +15,6 @@ class DeclarativeTestCase(unittest.TestCase):
         db.create_all()
         users = [generate_fake_user(username="creator",
                                     email="creator@instabattle.me", password="123"),
-                 #generate_fake_user(username="opponent",
-                 #                   email="opponent@instabattle.me", password="456"),
                  generate_fake_user(username="voter1"),
                  generate_fake_user(username="voter2")]
 

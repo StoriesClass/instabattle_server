@@ -3,6 +3,7 @@ from marshmallow import ValidationError
 from marshmallow import post_load
 from marshmallow import validates_schema
 
+from app.api.common import custom_fields
 from app.api.common.validators import exists_in_db
 from app.models import Battle, Entry, User
 
@@ -32,7 +33,7 @@ class BattleSchema(StrictSchema):
 
 class UserSchema(StrictSchema):
     id = fields.Int(dump_only=True)
-    username = fields.Str(required=True, validate=(validate.Length(min=3),
+    username = custom_fields.Lowercased(required=True, validate=(validate.Length(min=3),
                                                    lambda x: x[0].isalpha()))
     email = fields.Email(required=True, validate=validate.Email())
     password = fields.Str(load_only=True)
@@ -66,7 +67,7 @@ class VoteSchema(StrictSchema):
                 #User.is_voted(data['battle_id'], data['winner_id'], data['loser_id']): # FIXME
             raise ValidationError("Can't validate VoteSchema")
 
-    @post_load
+    @post_load # FIXME
     def validate_entries_id(self, data):
         battle_id_winner = Entry.query.get(data['winner_id']).battle_id
         battle_id_loser = Entry.query.get(data['loser_id']).battle_id

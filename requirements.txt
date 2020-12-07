@@ -19,7 +19,7 @@ marshmallow==2.21.0
 # a better server to run it locally
 gunicorn==20.0.4
 # Declarative parsing and validation of HTTP request objects (see @use_kwargs), need to update
-webargs==1.10.0
+webargs==5.1.3
 # for rating calculation
 trueskill==0.4.5
 # for testing

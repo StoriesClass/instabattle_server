@@ -4,7 +4,6 @@ from base64 import b64encode
 from flask import url_for
 from app import create_app, db
 from app.helpers import generate_fake_user
-from app.models import User
 
 
 class APITestCase(unittest.TestCase):
@@ -12,6 +11,7 @@ class APITestCase(unittest.TestCase):
         self.app = create_app('testing')
         self.app_context = self.app.app_context()
         self.app_context.push()
+        self.request_context = self.app.test_request_context().push()
         db.create_all()
         self.client = self.app.test_client()
 

@@ -1,7 +1,8 @@
 import unittest
+
 from app import create_app, db
 from app.helpers import generate_fake_battle, generate_fake_user
-from app.models import Battle, User, Entry, Vote
+from app.models import Battle
 
 
 class BattleModelTestCase(unittest.TestCase):

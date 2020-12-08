@@ -11,7 +11,7 @@ from sqlalchemy import desc
 from sqlalchemy.ext.hybrid import hybrid_method
 from trueskill import Rating, rate_1vs1, quality_1vs1
 from .helpers import try_add
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadData
 
 
 class Permission:
@@ -164,11 +164,13 @@ class Battle(db.Model):
     @hybrid_method
     def distance_to(self, latitude, longitude):
         from haversine import haversine
-        return haversine((latitude, longitude), (self.latitude, self.longitude))*1000
+        return haversine((latitude, longitude), (self.latitude, self.longitude)) * 1000
 
     @staticmethod
     def get_in_radius(latitude, longitude, radius):
         """
+        :param longitude: longitude of the center point
+        :param latitude: latitude of the center point
         :param radius: in meters
         :return: List of battles in given radius from (latitude, longitude)
         """
@@ -273,8 +275,8 @@ class User(UserMixin, db.Model):
         return Vote.query.filter(
             (Vote.voter_id == self.id) &
             (Vote.battle_id == battle_id) & (
-                ((Vote.winner_id == winner_id) & (Vote.loser_id == loser_id)) |
-                ((Vote.winner_id == loser_id) & (Vote.loser_id == winner_id))
+                    ((Vote.winner_id == winner_id) & (Vote.loser_id == loser_id)) |
+                    ((Vote.winner_id == loser_id) & (Vote.loser_id == winner_id))
             )).count() != 0
 
     @property
@@ -291,6 +293,7 @@ class User(UserMixin, db.Model):
         """
         :param user_id: identifier of the wanted user.
         :param username: name of the wanted user.
+        :param message: custom abortion message. If `None`, then default will be used.
         :return: Entry object if there is a user with given id or username,
         404 otherwise.
         """
@@ -338,7 +341,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except:
+        except BadData:
             return None
         return User.query.get(data['id'])
 

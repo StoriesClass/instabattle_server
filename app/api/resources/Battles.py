@@ -1,18 +1,19 @@
 from sqlite3 import IntegrityError
+
 from flask import Response
 from flask import g
 from flask import jsonify
 from flask_restful import Resource, abort
 from marshmallow.validate import Range
 from webargs import fields
+from webargs.flaskparser import use_kwargs
 
 from app import db
 from app.api.authentication import not_anonymous_required
-from app.api.common import BattleSchema, UserSchema
+from app.api.common import BattleSchema
 from app.helpers import try_add
-from ...models import Battle, User, Vote, Permission
 from ..common import battle_schema, battles_list_schema, entries_list_schema, vote_schema
-from webargs.flaskparser import use_kwargs
+from ...models import Battle, User, Vote, Permission
 
 
 class BattlesListAPI(Resource):
@@ -26,6 +27,7 @@ class BattlesListAPI(Resource):
             battles = Battle.get_in_radius(latitude, longitude, radius)
         elif latitude or longitude or radius:
             abort(400, message="Wrong arguments. Maybe a typo?")
+            return
         else:
             battles = Battle.get_list()
         return jsonify(battles_list_schema.dump(battles))
@@ -124,6 +126,7 @@ class BattleVoting(Resource):
             entry1, entry2 = battle.get_voting(user_id)
         except TypeError:
             abort(400, message="Couldn't get voting")
+            return
 
         try:
             return jsonify(entries_list_schema.dump([entry1, entry2]))

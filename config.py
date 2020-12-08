@@ -4,7 +4,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SSL_DISABLE = True # Should be False in production
+    SSL_DISABLE = True  # Should be False in production
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'test'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -16,12 +16,12 @@ class Config:
 class TestingConfig(Config):
     DEBUG = True
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or\
+    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
                               'sqlite:///' + os.path.join(basedir, 'data-test.sqlite')
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or\
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
                               'postgresql+psycopg2://test:test@localhost:5432/instabattle_test'
 
 
@@ -36,6 +36,7 @@ class HerokuConfig(ProductionConfig):
         file_handler = StreamHandler()
         file_handler.setLevel(logging.WARNING)
         app.logger.addHandler(file_handler)
+
 
 config = {
     'testing': TestingConfig,

@@ -5,6 +5,7 @@ from app.models import Permission
 
 auth = HTTPBasicAuth()
 
+
 @auth.verify_password
 def verify_password(username_or_token, password):
     from app.models import User, AnonymousUser
@@ -29,7 +30,9 @@ def not_anonymous_required(func):
             return func(*args, **kwargs)
         else:
             abort(401, message="Login required for this endpoint")
+
     return func_wrapper
+
 
 def id_or_admin_required(func):
     def func_wrapper(*args, **kwargs):
@@ -37,4 +40,5 @@ def id_or_admin_required(func):
             return func(*args, **kwargs)
         else:
             abort(403, message="Only administrators may carry out this operation on another user")
+
     return func_wrapper

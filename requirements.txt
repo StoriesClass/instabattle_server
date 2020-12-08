@@ -28,6 +28,12 @@ pyresttest==1.7.1
 # path extractor for pyresttest
 jmespath==0.10.0
 
+
+# Included in dependencies above, only to make it explicit
+werkzeug
+sqlalchemy
+itsdangerous
+
 # most of the stuff here is probably not needed
 #future==0.16.0
 #alabaster==0.7.9

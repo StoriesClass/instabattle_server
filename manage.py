@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import random
 
 from app import create_app, db
 from flask_script import Manager, Shell
@@ -17,7 +16,7 @@ def make_shell_context():
     Create shell context for convenient debugging
     """
     from app.helpers import (generate_fake_user, generate_fake_battle,
-                             generate_fake_entry,generate_fake_vote)
+                             generate_fake_entry, generate_fake_vote)
     from app.helpers import try_add
     return dict(db=db,
                 app=app,
@@ -69,7 +68,7 @@ def generate_fake(user_count=7, battle_count=21, entry_count=100, vote_count=200
     from app.helpers import (try_add, generate_fake_user, generate_fake_battle,
                              generate_fake_entry, generate_fake_vote)
 
-    user_count, battle_count, entry_count, vote_count = int(user_count), int(battle_count),\
+    user_count, battle_count, entry_count, vote_count = int(user_count), int(battle_count), \
                                                         int(entry_count), int(vote_count)
 
     seed()

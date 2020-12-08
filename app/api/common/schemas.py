@@ -20,15 +20,10 @@ class BattleSchema(Schema):
     entry_count = fields.Method("get_entry_count", dump_only=True)
     radius = fields.Float(required=True)
 
-    def get_entry_count(self, battle):
-        # FIXME poor performance (?)
-        return len(battle.entries)
-
 
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)
-    username = custom_fields.Lowercased(required=True, validate=(validate.Length(min=3),
-                                                   lambda x: x[0].isalpha()))
+    username = custom_fields.Lowercased(required=True, validate=(validate.Length(min=3), lambda x: x[0].isalpha()))
     email = fields.Email(required=True, validate=validate.Email())
     password = fields.Str(load_only=True)
     created_on = fields.DateTime(dump_only=True)
@@ -57,11 +52,11 @@ class VoteSchema(Schema):
 
     @post_load
     def validate_schema(self, data):
-        if data['winner_id'] == data['loser_id']:# or \
-                #User.is_voted(data['battle_id'], data['winner_id'], data['loser_id']): # FIXME
+        if data['winner_id'] == data['loser_id']:  # or \
+            # User.is_voted(data['battle_id'], data['winner_id'], data['loser_id']): # FIXME
             raise ValidationError("Can't validate VoteSchema")
 
-    @post_load # FIXME
+    @post_load  # FIXME
     def validate_entries_id(self, data):
         battle_id_winner = Entry.query.get(data['winner_id']).battle_id
         battle_id_loser = Entry.query.get(data['loser_id']).battle_id

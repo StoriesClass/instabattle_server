@@ -37,7 +37,7 @@ api.add_resource(TokenAPI, '/token', endpoint='get_token')
 @auth.login_required
 def before_request():
     pass
-    #if not g.current_user.is_anonymous and \
+    # if not g.current_user.is_anonymous and \
     #        not g.current_user.confirmed:
     #    return forbidden("Unconfirmed account")
 
@@ -68,6 +68,7 @@ def internal_server_error(e):
     response = jsonify({'error': 'internal server error'})
     response.status_code = 500
     return response
+
 
 @parser.error_handler
 def handle_request_parsing_error(err):

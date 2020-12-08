@@ -82,6 +82,7 @@ class UserAPI(Resource):
             user_query = User.query.filter_by(id=user_id)
         else:
             abort(404, message="Provide username or id")
+            return
 
         user_query.first_or_404()
         user_query.delete()
@@ -99,6 +100,8 @@ class UserResetPassword(Resource):
         Send to email to the user with reset password instructions
         """
         user = User.get_or_404(user_id, username)
+        # TODO implement it
+
 
 class UserEntries(Resource):
     def get(self, user_id=None, username=None):
@@ -107,6 +110,7 @@ class UserEntries(Resource):
         """
         user = User.get_or_404(user_id, username)
         return jsonify(entries_list_schema.dump(user.entries))
+
 
 class UserVotes(Resource):
     def get(self, user_id=None, username=None):

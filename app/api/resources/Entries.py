@@ -12,7 +12,7 @@ from ..common import entry_schema, entries_list_schema
 from ...models import Entry, User, Battle
 
 
-class EntriesListAPI(Resource): # FIXME move to battle/id/entries
+class EntriesListAPI(Resource):  # FIXME move to battle/id/entries
     @use_kwargs({'count': fields.Int(validate=validate.Range(min=1))})
     def get(self, count):
         """
@@ -42,23 +42,23 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
         else:
             abort(400, message="Couldn't create new entry")
 
-        # FIXME
-        @not_anonymous_required
-        @use_kwargs({'entry_id': fields.Int()})
-        def delete(self, entry_id):
-            """
-            Delete entry by id.
-            :return: deleted entry if delete was successful
-            """
+    # FIXME
+    @not_anonymous_required
+    @use_kwargs({'entry_id': fields.Int()})
+    def delete(self, entry_id):
+        """
+        Delete entry by id.
+        :return: deleted entry if delete was successful
+        """
 
-            Entry.query.get_or_404(entry_id)
-            Entry.query.filter_by(id=entry_id).delete()
-            try:
-                db.session.commit()
-                return Response(status=204)
-            except IntegrityError as e:
-                print(e)
-                abort(500, message="Entry exists but we couldn't delete it")
+        Entry.query.get_or_404(entry_id)
+        Entry.query.filter_by(id=entry_id).delete()
+        try:
+            db.session.commit()
+            return Response(status=204)
+        except IntegrityError as e:
+            print(e)
+            abort(500, message="Entry exists but we couldn't delete it")
 
 
 class EntryAPI(Resource):
@@ -73,5 +73,6 @@ class EntryAPI(Resource):
     def put(self, entry_id):
         """
         Update the entry
-        """ # FIXME
+        """
         entry = Entry.query.get_or_404(entry_id)
+        # TODO: implement it

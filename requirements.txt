@@ -1,5 +1,4 @@
-# the main thing (need to update)
-Flask==0.12.5
+Flask==1.1.2
 # for password verification etc.
 Flask-HTTPAuth==4.2.0
 # for user session management (was 0.4)

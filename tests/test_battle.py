@@ -29,7 +29,7 @@ class BattleModelTestCase(unittest.TestCase):
             db.session.add(b)
         db.session.commit()
         battles = Battle.get_list()
-        self.assertEquals(size, len(battles))
+        self.assertEqual(size, len(battles))
 
     def test_voting(self):
         from app.helpers import (generate_fake_entry, generate_fake_vote,

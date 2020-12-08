@@ -1,19 +1,13 @@
 from marshmallow import Schema, fields, validate
 from marshmallow import ValidationError
 from marshmallow import post_load
-from marshmallow import validates_schema
 
 from app.api.common import custom_fields
 from app.api.common.validators import exists_in_db
-from app.models import Battle, Entry, User
+from app.models import Entry
 
 
-class StrictSchema(Schema):
-    class Meta:
-        strict = True  # For using schemas with webargs
-
-
-class BattleSchema(StrictSchema):
+class BattleSchema(Schema):
     id = fields.Int(dump_only=True)
     username = fields.Str(load_only=True, validate=exists_in_db("User"))
     user_id = fields.Int(load_only=True, validate=exists_in_db("User"))
@@ -31,7 +25,7 @@ class BattleSchema(StrictSchema):
         return len(battle.entries)
 
 
-class UserSchema(StrictSchema):
+class UserSchema(Schema):
     id = fields.Int(dump_only=True)
     username = custom_fields.Lowercased(required=True, validate=(validate.Length(min=3),
                                                    lambda x: x[0].isalpha()))
@@ -42,7 +36,7 @@ class UserSchema(StrictSchema):
     battle_creation_limit = fields.Int(dump_only=True)
 
 
-class EntrySchema(StrictSchema):
+class EntrySchema(Schema):
     id = fields.Int(dump_only=True)
     latitude = fields.Float(required=True, validate=validate.Range(-90, 90))
     longitude = fields.Float(required=True, validate=validate.Range(-180, 180))
@@ -53,7 +47,7 @@ class EntrySchema(StrictSchema):
     rating = fields.Float(required=True, dump_only=True)
 
 
-class VoteSchema(StrictSchema):
+class VoteSchema(Schema):
     id = fields.Int(dump_only=True)
     created_on = fields.DateTime(dump_only=True)
     voter_id = fields.Int(required=True, validate=exists_in_db("User"))

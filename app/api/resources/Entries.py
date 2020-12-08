@@ -20,7 +20,7 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
         :return: list of top entries
         """
         entries = Entry.get_list(count)
-        return jsonify(entries_list_schema.dump(entries).data)
+        return jsonify(entries_list_schema.dump(entries))
 
     @not_anonymous_required
     @use_kwargs(entry_schema)
@@ -36,7 +36,7 @@ class EntriesListAPI(Resource): # FIXME move to battle/id/entries
                       battle=battle)
 
         if try_add(entry):
-            response = jsonify(entry_schema.dump(entry).data)
+            response = jsonify(entry_schema.dump(entry))
             response.status_code = 201
             return response
         else:
@@ -67,7 +67,7 @@ class EntryAPI(Resource):
         Get the entry
         """
         entry = Entry.query.get_or_404(entry_id)
-        return jsonify(entry_schema.dump(entry).data)
+        return jsonify(entry_schema.dump(entry))
 
     @not_anonymous_required
     def put(self, entry_id):

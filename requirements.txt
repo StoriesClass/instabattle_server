@@ -15,7 +15,7 @@ Flask-SQLAlchemy==2.4.4
 # for generating fakes
 ForgeryPy3==0.3.1
 # for serialization (should update to 3)
-marshmallow==2.21.0
+marshmallow==3.9.1
 # a better server to run it locally
 gunicorn==20.0.4
 # Declarative parsing and validation of HTTP request objects (see @use_kwargs)

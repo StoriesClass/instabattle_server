@@ -16,7 +16,7 @@ from webargs.flaskparser import use_kwargs
 
 
 class BattlesListAPI(Resource):
-    @use_kwargs(UserSchema(only=('latitude', 'longitude', 'radius'), partial=True))
+    @use_kwargs(BattleSchema(only=('latitude', 'longitude', 'radius'), partial=True))
     def get(self, latitude=None, longitude=None, radius=None):
         """
         Get list of battles by latitude, longitude and radius.
@@ -28,7 +28,7 @@ class BattlesListAPI(Resource):
             abort(400, message="Wrong arguments. Maybe a typo?")
         else:
             battles = Battle.get_list()
-        return jsonify(battles_list_schema.dump(battles).data)
+        return jsonify(battles_list_schema.dump(battles))
 
     @not_anonymous_required
     @use_kwargs(battle_schema)
@@ -49,7 +49,7 @@ class BattlesListAPI(Resource):
             abort(400, message="You have created too many battles already")
 
         if try_add(battle):
-            response = jsonify(battle_schema.dump(battle).data)
+            response = jsonify(battle_schema.dump(battle))
             response.status_code = 201
             return response
         else:
@@ -62,7 +62,7 @@ class BattleAPI(Resource):
         Get existing battle
         """
         battle = Battle.query.get_or_404(battle_id)
-        return jsonify(battle_schema.dump(battle).data)
+        return jsonify(battle_schema.dump(battle))
 
     @not_anonymous_required
     @use_kwargs(BattleSchema(only=('name', 'description')))
@@ -79,7 +79,7 @@ class BattleAPI(Resource):
             battle.description = description
 
         if try_add(battle):
-            return jsonify(battle_schema.dump(battle).data)
+            return jsonify(battle_schema.dump(battle))
         else:
             return abort(400, message="Couldn't update user.")
 
@@ -109,7 +109,7 @@ class BattleEntries(Resource):
         Get all entries of the battle
         """
         battle = Battle.query.get_or_404(battle_id)
-        return jsonify(entries_list_schema.dump(battle.get_entries(count)).data)
+        return jsonify(entries_list_schema.dump(battle.get_entries(count)))
 
 
 class BattleVoting(Resource):
@@ -126,7 +126,7 @@ class BattleVoting(Resource):
             abort(400, message="Couldn't get voting")
 
         try:
-            return jsonify(entries_list_schema.dump([entry1, entry2]).data)
+            return jsonify(entries_list_schema.dump([entry1, entry2]))
         except TypeError:
             abort(500, message="Couldn't get dump voting")
 
@@ -146,7 +146,7 @@ class BattleVoting(Resource):
             abort(400, message="User had already voted on this pair")
 
         if try_add(vote):
-            response = jsonify(vote_schema.dump(vote).data)
+            response = jsonify(vote_schema.dump(vote))
             response.status_code = 201
             return response
         else:

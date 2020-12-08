@@ -25,7 +25,7 @@ class UsersListAPI(Resource):
                     password=password)
 
         if try_add(user):
-            response = jsonify(user_schema.dump(user).data)
+            response = jsonify(user_schema.dump(user))
             response.status_code = 201
             return response
         else:
@@ -38,7 +38,7 @@ class UsersListAPI(Resource):
         :return: list of top users
         """
         users = User.get_list(count)
-        return jsonify(users_list_schema.dump(users).data)
+        return jsonify(users_list_schema.dump(users))
 
 
 class UserAPI(Resource):
@@ -49,7 +49,7 @@ class UserAPI(Resource):
         """
         user = User.get_or_404(user_id, username)
 
-        return jsonify(user_schema.dump(user).data)
+        return jsonify(user_schema.dump(user))
 
     @not_anonymous_required
     @use_kwargs(UserSchema(exclude=('username',), partial=('email',)))
@@ -66,7 +66,7 @@ class UserAPI(Resource):
             user.password = password
 
         if try_add(user):
-            return jsonify(user_schema.dump(user).data)
+            return jsonify(user_schema.dump(user))
         else:
             abort(400, message="Couldn't change user info")
 
@@ -106,7 +106,7 @@ class UserEntries(Resource):
         Get all battle entries of the user
         """
         user = User.get_or_404(user_id, username)
-        return jsonify(entries_list_schema.dump(user.entries).data)
+        return jsonify(entries_list_schema.dump(user.entries))
 
 class UserVotes(Resource):
     def get(self, user_id=None, username=None):
@@ -114,4 +114,4 @@ class UserVotes(Resource):
         Get all votes of the user
         """
         user = User.get_or_404(user_id, username)
-        return jsonify(votes_list_schema.dump(user.votes).data)
+        return jsonify(votes_list_schema.dump(user.votes))

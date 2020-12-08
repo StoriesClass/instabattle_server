@@ -21,7 +21,7 @@ class BattleModelTestCase(unittest.TestCase):
 
     def test_get_list(self):
         battles = Battle.get_list()
-        self.assertEquals(0, len(battles))
+        self.assertEqual(0, len(battles))
         size = 10
         creator = generate_fake_user()
         db.session.add(creator)

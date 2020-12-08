@@ -14,9 +14,10 @@ from ...models import Battle, User, Vote, Permission
 from ..common import battle_schema, battles_list_schema, entries_list_schema, vote_schema
 from webargs.flaskparser import use_kwargs
 
+
 class BattlesListAPI(Resource):
     @use_kwargs(UserSchema(only=('latitude', 'longitude', 'radius'), partial=True))
-    def get(self, latitude, longitude, radius):
+    def get(self, latitude=None, longitude=None, radius=None):
         """
         Get list of battles by latitude, longitude and radius.
         If no arguments is provided returns list of all battles.
@@ -36,7 +37,6 @@ class BattlesListAPI(Resource):
         Create new battle and return it if it was created.
         """
         creator = User.get_or_404(user_id, username)
-
 
         battle = Battle(latitude=latitude,
                         longitude=longitude,

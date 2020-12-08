@@ -18,12 +18,16 @@ ForgeryPy3==0.3.1
 marshmallow==2.21.0
 # a better server to run it locally
 gunicorn==20.0.4
-# Declarative parsing and validation of HTTP request objects (see @use_kwargs), need to update
-webargs==1.10.0
+# Declarative parsing and validation of HTTP request objects (see @use_kwargs)
+webargs==6.1.1
+# distance calculation
+haversine==2.3.0
 # for rating calculation
 trueskill==0.4.5
 # for testing
 pyresttest==1.7.1
+# path extractor for pyresttest
+jmespath==0.10.0
 
 # most of the stuff here is probably not needed
 #future==0.16.0
@@ -31,10 +35,8 @@ pyresttest==1.7.1
 #appdirs==1.4.2
 #bleach==1.5.0
 #entrypoints==0.2.2
-#haversine==0.4.5
 #httplib2==0.10.3
 #imagesize==0.7.1
-#jmespath==0.9.1
 #jsonschema==2.6.0
 #packaging==16.8
 #pexpect==4.2.1

@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from pyresttest import resttest
@@ -22,7 +21,6 @@ class DeclarativeTestCase(unittest.TestCase):
             self.fail("Couldn't create users in SetUp")
         print(User.query.get(1))
 
-
     def tearDown(self):
         db.session.remove()
         db.drop_all()
@@ -31,7 +29,7 @@ class DeclarativeTestCase(unittest.TestCase):
     def declarative_tester(self, name):
         # FIXME Travis CI and logging
         with self.assertRaises(SystemExit) as failures:
-            resttest.main({'url': "http://localhost:8000", 'test': 'tests/test_' + name + '.yaml'})
+            resttest.main({'url': "http://localhost:8000", 'test': 'test_' + name + '.yaml'})
         self.assertEqual(failures.exception.code, 0)
 
     def test_declarative_battle(self):
